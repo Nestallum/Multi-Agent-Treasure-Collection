@@ -1,0 +1,17 @@
+# Exclure les fichiers de cache Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Environnements virtuels
+venv/
+env/
+.venv/
+.env/
+
+# Fichiers de configuration ou sensibles
+*.env
+*.DS_Store
+.idea/
+.vscode/
+*.log
