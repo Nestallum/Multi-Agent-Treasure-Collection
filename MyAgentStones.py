@@ -21,7 +21,7 @@ class MyAgentStones(MyAgent):
 
     #return the agent's type
     def getType(self):
-        return 1
+        return 2
 
     # load the treasure at the current position
     def load(self,env):
