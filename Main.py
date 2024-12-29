@@ -4,7 +4,7 @@ from MyAgentGold import  MyAgentGold
 from MyAgentChest import MyAgentChest
 from MyAgentStones import MyAgentStones
 from Treasure import Treasure
-from Graphics_assets import Graphics
+from Graphics import Graphics
 import random
 
 horizon = 100

@@ -2,8 +2,8 @@ import pygame
 import sys
 
 # Constants for display
-CELL_SIZE = 60
-MARGIN = 4
+CELL_SIZE = 60  # Taille des cases
+MARGIN = 5
 
 # Colors
 CELL = (25, 25, 25)
@@ -15,147 +15,139 @@ BLUE = (74, 144, 226)
 RED = (209, 84, 90)
 GOLD = (214, 165, 58)
 
-
-# class Graphics:
-#     def __init__(self, environment):
-#         pygame.init()
-#         self.env = environment
-#         self.width = environment.tailleX * (CELL_SIZE + MARGIN) + MARGIN
-#         self.height = environment.tailleY * (CELL_SIZE + MARGIN) + MARGIN
-#         self.screen = pygame.display.set_mode((self.width, self.height))
-#         pygame.display.set_caption("Treasure Hunt - Multi-Agent System")
-#         self.clock = pygame.time.Clock()
-
-#     def draw_grid(self):
-#         self.screen.fill(WHITE)  # Fond noir comme l'ancien affichage
-#         for x in range(self.env.tailleX):
-#             for y in range(self.env.tailleY):
-#                 # Couleur par défaut pour une cellule vide
-#                 color = CELL
-
-#                 # Vérifie si la cellule est le dépôt
-#                 if (x, y) == self.env.posUnload:
-#                     color = GRAY
-
-#                 # Vérifie s'il y a un trésor (coffres représentés par des carrés)
-#                 elif self.env.grilleTres[x][y] is not None:
-#                     if self.env.grilleTres[x][y].getType() == 1:
-#                         color = GOLD
-#                     else:
-#                         color = RED
-
-#                 # Dessine la cellule (grille avec fond gris par défaut)
-#                 pygame.draw.rect(
-#                     self.screen,
-#                     color,
-#                     [
-#                         y * (CELL_SIZE + MARGIN) + MARGIN,
-#                         x * (CELL_SIZE + MARGIN) + MARGIN,
-#                         CELL_SIZE,
-#                         CELL_SIZE,
-#                     ],
-#                 )
-
-#                 # Vérifie s'il y a un agent (agents représentés par des cercles)
-#                 if self.env.grilleAgent[x][y] is not None:
-#                     agent = self.env.grilleAgent[x][y]
-#                     if hasattr(agent, 'getType'):
-#                         agent_type = agent.getType()
-#                         if agent_type == 1:  # Agent Gold
-#                             color = GOLD
-#                         elif agent_type == 2:  # Agent Stones
-#                             color = RED
-#                         elif agent_type == 0:  # Agent Chest
-#                             color = BLUE
-
-#                         pygame.draw.circle(
-#                             self.screen,
-#                             color,
-#                             (
-#                                 y * (CELL_SIZE + MARGIN) + MARGIN + CELL_SIZE // 2,
-#                                 x * (CELL_SIZE + MARGIN) + MARGIN + CELL_SIZE // 2,
-#                             ),
-#                             CELL_SIZE // 2
-#                         )
-
-#     def update_display(self):
-#         self.draw_grid()
-#         pygame.display.flip()
-
-#     def run(self):
-#         running = True
-#         while running:
-#             for event in pygame.event.get():
-#                 if event.type == pygame.QUIT:
-#                     running = False
-#             self.update_display()
-#             self.clock.tick(30)
-
-#         pygame.quit()
-#         sys.exit()
-
 class Graphics:
     def __init__(self, environment):
         pygame.init()
         self.env = environment
+        self.env_updated = True
         self.width = environment.tailleX * (CELL_SIZE + MARGIN) + MARGIN  # Largeur totale
         self.height = environment.tailleY * (CELL_SIZE + MARGIN) + MARGIN  # Hauteur totale
         self.screen = pygame.display.set_mode((self.width, self.height))
         pygame.display.set_caption("Treasure Hunt - Multi-Agent System")
         self.clock = pygame.time.Clock()
+        self.font = pygame.font.SysFont(None, 20) # Police pour l'affichage des ressources
         self.font_small = pygame.font.SysFont(None, 15)  # Police pour les coordonnées, plus petite
+        
+
+        # Charger les assets PNG
+        self.img_empty_cell = pygame.transform.scale(pygame.image.load("assets/empty_cell.png"), (CELL_SIZE, CELL_SIZE))
+        self.img_drop_off = pygame.transform.scale(pygame.image.load("assets/drop_off.png"), (CELL_SIZE, CELL_SIZE))
+        self.img_agent_gold = pygame.transform.scale(pygame.image.load("assets/agent_gold.png"), (CELL_SIZE, CELL_SIZE))
+        self.img_agent_stones = pygame.transform.scale(pygame.image.load("assets/agent_stones.png"), (CELL_SIZE, CELL_SIZE))
+        self.img_agent_chest = pygame.transform.scale(pygame.image.load("assets/agent_chest.png"), (CELL_SIZE, CELL_SIZE))
+        self.img_treasure_gold = pygame.transform.scale(pygame.image.load("assets/treasure_gold.png"), (CELL_SIZE, CELL_SIZE))
+        self.img_treasure_stones = pygame.transform.scale(pygame.image.load("assets/treasure_stones.png"), (CELL_SIZE, CELL_SIZE))
 
     def draw_grid(self):
         self.screen.fill(WHITE)  # Fond blanc
         for x in range(self.env.tailleX):
             for y in range(self.env.tailleY):
-                # Couleur par défaut pour une cellule vide
-                color = CELL
-
-                # Vérifie si la cellule est le dépôt
-                if (x, y) == self.env.posUnload:
-                    color = GRAY
-
-                # Vérifie s'il y a un trésor (coffres représentés par des carrés)
-                elif self.env.grilleTres[x][y] is not None:
-                    if self.env.grilleTres[x][y].getType() == 1:
-                        color = GOLD
-                    else:
-                        color = RED
-
-                # Dessine la cellule (grille avec fond gris par défaut)
-                pygame.draw.rect(
-                    self.screen,
-                    color,
-                    [
+                # Dessiner la cellule vide par défaut
+                self.screen.blit(
+                    self.img_empty_cell,
+                    (
                         y * (CELL_SIZE + MARGIN) + MARGIN,  # Décalage horizontal
                         x * (CELL_SIZE + MARGIN) + MARGIN,  # Décalage vertical
-                        CELL_SIZE,
-                        CELL_SIZE,
-                    ],
+                    ),
                 )
 
-                # Vérifie s'il y a un agent (agents représentés par des cercles)
+                # Dessiner le dépôt
+                if (x, y) == self.env.posUnload:
+                    resources = "Drop Off"
+                    score = str(self.env.score)
+                    self.screen.blit(  
+                        self.img_drop_off,
+                        (
+                            y * (CELL_SIZE + MARGIN) + MARGIN,
+                            x * (CELL_SIZE + MARGIN) + MARGIN,
+                        ),
+                    )
+                    # Dessiner le texte avec les ressources
+                    resources = self.font.render(resources, True, WHITE)
+                    score = self.font.render(score, True, WHITE)
+                    resources_rect = resources.get_rect(center=(
+                        y * (CELL_SIZE + MARGIN) + MARGIN + CELL_SIZE // 2,
+                        x * (CELL_SIZE + MARGIN) + CELL_SIZE - 6
+                    ))
+                    score_rect = score.get_rect(center=(
+                        y * (CELL_SIZE + MARGIN) + MARGIN + CELL_SIZE // 2,
+                        x * (CELL_SIZE + MARGIN) + MARGIN + CELL_SIZE // 2
+                    ))
+                    self.screen.blit(resources, resources_rect)
+                    self.screen.blit(score, score_rect)  
+
+                # Dessiner les trésors (coffres)
+                elif self.env.grilleTres[x][y] is not None:
+                    if self.env.grilleTres[x][y].getType() == 1:  # Trésor or
+                        treasure_img = self.img_treasure_gold
+                        treasure = self.env.grilleTres[x][y]
+                        resources = str(treasure.getValue())
+                        status = "Closed"
+                        if treasure.isOpen():
+                            status = "Open !"
+                    
+                    else:  # Trésor pierres précieuses
+                        treasure_img = self.img_treasure_stones
+                        treasure = self.env.grilleTres[x][y]
+                        resources = str(treasure.getValue())
+                        status = "Closed"
+                        if treasure.isOpen():
+                            status = "Open !"
+
+                    self.screen.blit(  
+                        treasure_img,
+                        (
+                            y * (CELL_SIZE + MARGIN) + MARGIN,
+                            x * (CELL_SIZE + MARGIN) + MARGIN,
+                        ),
+                    )
+                    # Dessiner le texte avec les ressources
+                    resources = self.font.render(resources, True, WHITE)
+                    status = self.font.render(status, True, WHITE)
+                    resources_rect = resources.get_rect(center=(
+                        y * (CELL_SIZE + MARGIN) + MARGIN + CELL_SIZE // 2,
+                        x * (CELL_SIZE + MARGIN) + MARGIN + CELL_SIZE // 2
+                    ))
+                    status_rect = status.get_rect(center=(
+                        y * (CELL_SIZE + MARGIN) + MARGIN + CELL_SIZE // 2,
+                        x * (CELL_SIZE + MARGIN) + CELL_SIZE - 6
+                    ))
+                    self.screen.blit(resources, resources_rect)
+                    self.screen.blit(status, status_rect)
+
+                # Dessiner les agents
                 if self.env.grilleAgent[x][y] is not None:
                     agent = self.env.grilleAgent[x][y]
                     if hasattr(agent, 'getType'):
                         agent_type = agent.getType()
-                        if agent_type == 1:  # Agent Gold
-                            color = GOLD
-                        elif agent_type == 2:  # Agent Stones
-                            color = RED
-                        elif agent_type == 0:  # Agent Chest
-                            color = BLUE
+                        img = None
 
-                        pygame.draw.circle(
-                            self.screen,
-                            color,
-                            (
+                        if agent_type == 1:  # Agent Gold
+                            img = self.img_agent_gold
+                            resources = f"{agent.gold}/{agent.backPack}"
+                        elif agent_type == 2:  # Agent Stones
+                            img = self.img_agent_stones
+                            resources = f"{agent.stone}/{agent.backPack}"
+                        elif agent_type == 0:  # Agent Chest
+                            img = self.img_agent_chest
+                            resources = "Chest"
+
+                        if img:
+                            # Dessiner l'image de l'agent
+                            self.screen.blit(
+                                img,
+                                (
+                                    y * (CELL_SIZE + MARGIN) + MARGIN,
+                                    x * (CELL_SIZE + MARGIN) + MARGIN,
+                                ),
+                            )
+                            # Dessiner le texte avec les ressources
+                            text = self.font.render(resources, True, WHITE)
+                            text_rect = text.get_rect(center=(
                                 y * (CELL_SIZE + MARGIN) + MARGIN + CELL_SIZE // 2,
-                                x * (CELL_SIZE + MARGIN) + MARGIN + CELL_SIZE // 2,
-                            ),
-                            CELL_SIZE // 2.5
-                        )
+                                x * (CELL_SIZE + MARGIN) + MARGIN + CELL_SIZE // 2
+                            ))
+                            self.screen.blit(text, text_rect)
 
         # Ajouter les coordonnées externes (comme un échiquier)
         for x in range(self.env.tailleX):
@@ -178,18 +170,13 @@ class Graphics:
                 )
             )
 
-    def update_display(self):
+    def update_display(self, environment):
+        pygame.time.delay(500) # Ajoute un délai en ms
+        self.env = environment
+        # Gérer les événements utilisateur
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
         self.draw_grid()
         pygame.display.flip()
-
-    def run(self):
-        running = True
-        while running:
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    running = False
-            self.update_display()
-            self.clock.tick(30)
-
-        pygame.quit()
-        sys.exit()
