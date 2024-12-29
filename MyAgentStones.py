@@ -24,7 +24,7 @@ class MyAgentStones(MyAgent):
         return 2
 
     # load the treasure at the current position
-    def load(self,env):
+    def load(self, env):
         env.load(self)
 
     # add some precious stones to the backpack of the agent (quantity t)

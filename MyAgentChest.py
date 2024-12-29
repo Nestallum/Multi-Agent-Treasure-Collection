@@ -15,6 +15,10 @@ class MyAgentChest(MyAgent) :
     # the agent do not hold some treasure
     def getTreasure(self):
         return 0
+    
+    #return the agent's type
+    def getType(self):
+        return 0
 
     def __str__(self):
 

@@ -20,7 +20,7 @@ class MyAgent:
 
 
     #make the agent moves from (x1,y1) to (x2,y2)
-    def move(self,  x1,y1, x2, y2) :
+    def move(self, x1, y1, x2, y2) :
         if x1 == self.posX and y1 == self.posY :
             print("departure position OK")
             if self.env.move(self, x1, y1, x2, y2) :

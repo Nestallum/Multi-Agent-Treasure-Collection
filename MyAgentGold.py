@@ -10,7 +10,6 @@ class MyAgentGold(MyAgent):
         self.gold = 0 # the quantity of gold collected and not unloaded yet
         self.backPack = capacity #capacity of the agent's back pack
 
-
     #return quantity of gold collected and not unloaded yet
     def getTreasure(self):
         return self.gold
