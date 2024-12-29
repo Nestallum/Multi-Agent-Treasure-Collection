@@ -47,7 +47,7 @@ class MyAgent:
     #return a tuple (id of the sender, message  text content)
     def readMail (self):
         idSender, textContent = self.mailBox.pop(0)
-        print("mail received from {} with content {}".format(idSender,textContent))
+        print("mail received from {} with content {}".format(idSender, textContent))
         return (idSender, textContent)
 
 

@@ -4,7 +4,7 @@ from MyAgentGold import  MyAgentGold
 from MyAgentChest import MyAgentChest
 from MyAgentStones import MyAgentStones
 from Treasure import Treasure
-from Graphics_assets import Graphics
+from Graphics import Graphics
 import random
 
 horizon = 100
@@ -61,7 +61,6 @@ def loadFileConfig(nameFile) :
 
     return (env, dictAgent)
 
-
 def main():
     env, lAg = loadFileConfig("env1.txt")
     print(env)
@@ -97,19 +96,31 @@ def main():
     print(env)
     lAg.get("agent4").load(env) # fail because agent4 has not the right type
     graphics.update_display(env)
+    lAg.get("agent4").move(6, 3, 5, 2)
+    graphics.update_display(env)
     lAg.get("agent4").move(6, 3, 7, 5) # fail because position (7,5) is not a neighbour of the current position
     graphics.update_display(env)
     lAg.get("agent4").move(6, 3, 6, 2)
     graphics.update_display(env)
-    print(env)
-    lAg.get("agent2").move(5, 2, 5, 3)
+    lAg.get("agent4").move(6, 2, 5, 1)
     graphics.update_display(env)
-    lAg.get("agent2").move(5, 3, 6, 3)
+    lAg.get("agent4").move(5, 1, 5, 0)
     graphics.update_display(env)
-    lAg.get("agent2").load(env) # Success !
+    lAg.get("agent4").unload()
     graphics.update_display(env)
-    print(env)
+    lAg.get("agent4").move(5, 0, 6, 0)
     graphics.update_display(env)
+    lAg.get("agent4").move(6, 0, 6, 1)
+    graphics.update_display(env)
+    # print(env)
+    # lAg.get("agent2").move(5, 2, 5, 3)
+    # graphics.update_display(env)
+    # lAg.get("agent2").move(5, 3, 6, 3)
+    # graphics.update_display(env)
+    # lAg.get("agent2").load(env) # Success !
+    # graphics.update_display(env)
+    # print(env)
+    # graphics.update_display(env)
 
     env.gen_new_treasures(5, 7)
     print(env)

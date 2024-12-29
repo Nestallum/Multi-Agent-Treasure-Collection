@@ -6,8 +6,6 @@ class Treasure:
         self.open = False
         self.value = value
 
-
-
     # return True if the chest is open, False otherwise
     def isOpen(self):
         return self.open
