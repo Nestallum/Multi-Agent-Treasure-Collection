@@ -64,82 +64,109 @@ def loadFileConfig(nameFile) :
 def main():
     env, lAg = loadFileConfig("env1.txt")
     print(env)
-    for a in lAg.values() :
-        print(a)
     # # Initialiser l'interface graphique
     graphics = Graphics(env)
 
-    # # Lancer l'affichage graphique (Pygame)
-    # graphics.run()
+    # ouv = []
+    # for a in lAg.values():
+    #     if a.getType() == 0:
+    #         ouv.append(a)
+
+    # for a in ouv:
+    #     a.fill_tasks() # remplit les tâches
+    
+    # for a in ouv:
+    #     task = a.task_finding()
+    #     a.find_best_path(task)
+
+    # for a in ouv:
+    #     print(a.tasks)
+    #     print(a.task_path)
+    #     print(f'tache impossible : {a.other_agents_tasks}')
+
+    # graphics.update_display(env)
+    # for i in range(2):
+    #     for a in ouv:
+    #         move_x, move_y = a.next_move(a.task_path)
+    #         a.move(a.posX, a.posY, move_x, move_y)
+    #     graphics.update_display(env)
+
 
     #Exemple where the agents move and open a chest and pick up the treasure
-    graphics.update_display(env)
-    lAg.get("agent0").move(7, 4, 7, 3)
-    graphics.update_display(env)
-    lAg.get("agent0").move(7, 3, 6, 3)
-    graphics.update_display(env)
-    lAg.get("agent0").open()
-    graphics.update_display(env)
-    print(env)
+    # graphics.update_display(env)
+    # lAg.get("agent0").move(7, 4, 7, 3)
+    # graphics.update_display(env)
+    # lAg.get("agent0").move(7, 3, 6, 3)
+    # graphics.update_display(env)
+    # lAg.get("agent0").open()
+    # graphics.update_display(env)
+    # print(env)
     
-    lAg.get("agent0").move(6, 3, 7, 3)
-    graphics.update_display(env)
-    print(env)
-    lAg.get("agent4").move(6, 7, 6, 6)
-    graphics.update_display(env)
-    lAg.get("agent4").move(6, 6, 6, 5)
-    graphics.update_display(env)
-    lAg.get("agent4").move(6, 5, 6, 4)
-    graphics.update_display(env)
-    lAg.get("agent4").move(6, 4, 6, 3)
-    graphics.update_display(env)
-    print(env)
-    lAg.get("agent4").load(env) # fail because agent4 has not the right type
-    graphics.update_display(env)
-    lAg.get("agent4").move(6, 3, 5, 2)
-    graphics.update_display(env)
-    lAg.get("agent4").move(6, 3, 7, 5) # fail because position (7,5) is not a neighbour of the current position
-    graphics.update_display(env)
-    lAg.get("agent4").move(6, 3, 6, 2)
-    graphics.update_display(env)
-    lAg.get("agent4").move(6, 2, 5, 1)
-    graphics.update_display(env)
-    lAg.get("agent4").move(5, 1, 5, 0)
-    graphics.update_display(env)
-    lAg.get("agent4").unload()
-    graphics.update_display(env)
-    lAg.get("agent4").move(5, 0, 6, 0)
-    graphics.update_display(env)
-    lAg.get("agent4").move(6, 0, 6, 1)
-    graphics.update_display(env)
-    # print(env)
-    # lAg.get("agent2").move(5, 2, 5, 3)
-    # graphics.update_display(env)
-    # lAg.get("agent2").move(5, 3, 6, 3)
-    # graphics.update_display(env)
-    # lAg.get("agent2").load(env) # Success !
+    # lAg.get("agent0").move(6, 3, 7, 3)
     # graphics.update_display(env)
     # print(env)
+    # lAg.get("agent4").move(6, 7, 6, 6)
+    # graphics.update_display(env)
+    # lAg.get("agent4").move(6, 6, 6, 5)
+    # graphics.update_display(env)
+    # lAg.get("agent4").move(6, 5, 6, 4)
+    # graphics.update_display(env)
+    # lAg.get("agent4").move(6, 4, 6, 3)
+    # graphics.update_display(env)
+    # print(env)
+    # lAg.get("agent4").load(env) # fail because agent4 has not the right type
+    # graphics.update_display(env)
+    # lAg.get("agent4").move(6, 3, 5, 2)
+    # graphics.update_display(env)
+    # lAg.get("agent4").move(6, 3, 7, 5) # fail because position (7,5) is not a neighbour of the current position
+    # graphics.update_display(env)
+    # lAg.get("agent4").move(6, 3, 6, 2)
+    # graphics.update_display(env)
+    # lAg.get("agent4").move(6, 2, 5, 1)
+    # graphics.update_display(env)
+    # lAg.get("agent4").move(5, 1, 5, 0)
+    # graphics.update_display(env)
+    # lAg.get("agent4").unload()
+    # graphics.update_display(env)
+    # lAg.get("agent4").move(5, 0, 6, 0)
+    # graphics.update_display(env)
+    # lAg.get("agent4").move(6, 0, 6, 1)
+    # graphics.update_display(env)
+    # # print(env)
+    # # lAg.get("agent2").move(5, 2, 5, 3)
+    # # graphics.update_display(env)
+    # # lAg.get("agent2").move(5, 3, 6, 3)
+    # # graphics.update_display(env)
+    # # lAg.get("agent2").load(env) # Success !
+    # # graphics.update_display(env)
+    # # print(env)
+    # # graphics.update_display(env)
+
+    # env.gen_new_treasures(5, 7)
+    # print(env)
     # graphics.update_display(env)
 
-    env.gen_new_treasures(5, 7)
-    print(env)
-    graphics.update_display(env)
+    # #Example of unload tresor
+    # lAg.get("agent2").move(6, 3, 5,2)
+    # graphics.update_display(env)
+    # lAg.get("agent2").move(5, 2, 5, 1)
+    # graphics.update_display(env)
+    # lAg.get("agent2").move(5, 1, 5, 0)
+    # graphics.update_display(env)
+    # lAg.get("agent2").unload()
+    # graphics.update_display(env)
+    # print(env)
+    # #  Example where the agents communicate
 
-    #Example of unload tresor
-    lAg.get("agent2").move(6, 3, 5,2)
-    graphics.update_display(env)
-    lAg.get("agent2").move(5, 2, 5, 1)
-    graphics.update_display(env)
-    lAg.get("agent2").move(5, 1, 5, 0)
-    graphics.update_display(env)
-    lAg.get("agent2").unload()
-    graphics.update_display(env)
-    print(env)
-    #  Example where the agents communicate
+    # lAg.get("agent2").send("agent4", "Hello !")
+    # lAg.get("agent4").readMail()
+    # print("hello world")
+    
 
-    lAg.get("agent2").send("agent4", "Hello !")
-    lAg.get("agent4").readMail()
+
+
+
+
 
 
     ##############################################
@@ -154,8 +181,12 @@ def main():
         if(t%10 == 0):
             env.gen_new_treasures(random.randint(0,5), 7)
         for a in lAg.values():
-            print(a)
             #here the action of agent a at timestep t should be executed
+            if a.getType() == 0:
+                a.do_policy()
+                print(a)
+        graphics.update_display(env)
+            
 
     # print each agent's score
 
