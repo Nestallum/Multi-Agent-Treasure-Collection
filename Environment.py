@@ -39,7 +39,7 @@ class Environment:
                 or ( y2!= y1 -1 and  y2 != y1+1 and y2!=y1) : # invalid move
             print("invalid move")
             return False
-        if ( not self.isAt(agent, x1, y1)) or self.grilleAgent[x2][y2] != None  : # position already occupied
+        if (not self.isAt(agent, x1, y1)) or self.grilleAgent[x2][y2] != None  : # position already occupied
             print("position not free")
             return False
         else :
