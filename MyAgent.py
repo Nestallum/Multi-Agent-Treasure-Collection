@@ -147,12 +147,12 @@ class MyAgent:
             else:
                 self.other_agents_tasks.append(self.tasks[0])
                 return None # Aucune action
-
+        
+        # Cas 2 : au moins 2 taches à partager
         # Initialisation pour la recherche de la meilleure combinaison
         min_distance = float('inf')
         best_task_for_self = None
 
-            # Cas 2 : au moins 2 taches à partager
         # Parcourir toutes les combinaisons de deux tâches
         for task1, task2 in combinations(self.tasks, 2):
             # Distance pour self vers task1 et other vers task2
