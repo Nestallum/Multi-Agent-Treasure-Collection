@@ -35,12 +35,12 @@ def loadFileConfig(nameFile) :
                 env.addTreasure(tres, int(ligneSplit[2]), int(ligneSplit[3]))
 
         elif(ligneSplit[0]=="AG") : #new agent
-            # if(ligneSplit[1]=="or"):
-            #     id = "agent" + str(cpt)
-            #     agent = MyAgentGold(id, int(ligneSplit[2]), int(ligneSplit[3]), env, int(ligneSplit[4]))
-            #     dictAgent[id] = agent
-            #     env.addAgent(agent)
-            #     cpt = cpt +1
+            if(ligneSplit[1]=="or"):
+                id = "agent" + str(cpt)
+                agent = MyAgentGold(id, int(ligneSplit[2]), int(ligneSplit[3]), env, int(ligneSplit[4]))
+                dictAgent[id] = agent
+                env.addAgent(agent)
+                cpt = cpt +1
 
             # elif(ligneSplit[1]=="pierres"):
             #     id = "agent" + str(cpt)
@@ -177,12 +177,22 @@ def main():
 
 
     # make the agents execute their plans
-    for t in range(horizon):
+    for t in range(1000):
+        conflict_free = False
         if(t%10 == 0):
             env.gen_new_treasures(random.randint(0,5), 7)
         for a in lAg.values():
+                a.MessagetoAll()
+        while(not(conflict_free)):
+            for a in lAg.values():
+                a.readAllMail()
+            conflict_free = True
+            for a in lAg.values():
+                if(len(a.mailBox)!=0):
+                   conflict_free = False 
+            
+        for a in lAg.values():
             #here the action of agent a at timestep t should be executed
-            if a.getType() == 0:
                 a.do_policy()
                 print(a)
         graphics.update_display(env)

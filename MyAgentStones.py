@@ -1,3 +1,4 @@
+import ast
 from MyAgent import MyAgent
 
 
@@ -38,4 +39,61 @@ class MyAgentStones(MyAgent):
     def __str__(self):
         res ="agent Stone "+ self.id + " ("+ str(self.posX) + " , " + str(self.posY) + ")"
         return res
+         # return next move and pop it from path
+    def next_move(self, path):
+        if len(path) == 0: # Arrivé à la position de la tâche
+            if(self.env.posUnload == self.getPos()):
+                self.unload()
+            else :
+                self.load(self.env)
+            self.task_in_progress = False
+        else: # Avance sur son chemin
+            next_x, next_y = path[0]
+            move_ok = self.move(self.posX, self.posY, next_x, next_y)
+            if(move_ok == 1): # succès
+                path.pop(0)
 
+    def fill_tasks(self):
+        treasures = []
+        for x in range(len(self.env.grilleTres)):  # Parcourt les lignes
+            for y in range(len(self.env.grilleTres[x])):  # Parcourt les colonnes   
+                treasure = self.env.grilleTres[x][y]
+                if treasure is not None and not treasure.getValue() == 0:  # Vérifie s'il y a un trésor qui n'est pas vide
+                    if (x,y) not in self.other_agents_tasks: # Si le trésor n'est pas déjà affecté à un autre agent
+                        if treasure.isOpen() and treasure.getType() == 2:
+                            treasures.append((x, y))  # Ajoute (x, y) coordonnées du trésor à la liste
+        self.tasks = treasures
+
+    def is_other_occuped(self):
+        print(self.other_agents_tasks)
+        if(not self.other_agents_tasks == []): # l'autre agent est peut être occupé
+            x, y = self.other_agents_tasks[-1] # on récupère la tâche de l'autre agent
+            if not self.env.grilleTres[x][y].getValue() == 0: # l'agent n'a pas encore ouvert le coffre
+                return True
+        return False
+    
+    def do_policy(self):
+        self.forbidden_moves = []
+        if not(self.task_in_progress) and self.backPack/2 < self.stone :
+            task = self.env.posUnload
+            self.find_best_path(task)
+            self.task_in_progress = True
+            self.next_move(self.task_path)
+        if not (len(self.mailBox) == 0):
+            _, content = self.readMail()
+            # Utilisation de ast.literal_eval pour convertir la chaîne en tuple
+            msg = ast.literal_eval(content.split("_")[1].strip())
+            print(msg)
+            self.other_agents_tasks.append(msg)
+            print(self.other_agents_tasks)
+        if(self.task_in_progress): # Agent en cours de progression
+            self.next_move(self.task_path)
+        else:
+            self.fill_tasks() # Agent libre remplit sa liste de tâche
+            task = self.task_finding()
+            if(task is None):
+                print(f"Agent{self.getId} - aucune action possible.")
+            else:
+                self.find_best_path(task) # rempli le chemin de l'agent
+                self.task_in_progress = True
+                self.next_move(self.task_path) 
