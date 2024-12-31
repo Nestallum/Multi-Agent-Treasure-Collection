@@ -32,16 +32,18 @@ class MyAgentChest(MyAgent) :
     def next_move(self, path):
         if(self.opened):
             self.opened = False
-            self.move(self.posX, self.posY, self.posX+1,self.posY+1)
-        if len(path) == 0: # Arrivé à la position de la tâche
-            self.open()
-            self.task_in_progress = False
-            self.opened = True
-        else: # Avance sur son chemin
-            next_x, next_y = path[0]
-            move_ok = self.move(self.posX, self.posY, next_x, next_y)
-            if(move_ok == 1): # succès
-                path.pop(0)
+            if not self.task_in_progress: # A ouvert mais n'a pas bougé
+                self.move(self.posX, self.posY, self.posX+1,self.posY+1) # Random move pour ne pas gêner l'accès au coffre
+        if(self.task_in_progress):
+            if len(path) == 0: # Arrivé à la position de la tâche
+                self.open()
+                self.task_in_progress = False
+                self.opened = True
+            else: # Avance sur son chemin
+                next_x, next_y = path[0]
+                move_ok = self.move(self.posX, self.posY, next_x, next_y)
+                if(move_ok == 1): # succès
+                    path.pop(0)
 
     def fill_tasks(self):
         treasures = []
@@ -64,20 +66,13 @@ class MyAgentChest(MyAgent) :
     
     def do_policy(self):
         self.forbidden_moves = []
-        if not (len(self.mailBox) == 0):
-            _, content = self.readMail()
-            # Utilisation de ast.literal_eval pour convertir la chaîne en tuple
-            msg = ast.literal_eval(content.split("_")[1].strip())
-            print(msg)
-            self.other_agents_tasks.append(msg)
-            print(self.other_agents_tasks)
         if(self.task_in_progress): # Agent en cours de progression
             self.next_move(self.task_path)
         else:
             self.fill_tasks() # Agent libre remplit sa liste de tâche
             task = self.task_finding()
             if(task is None):
-                print(f"Agent{self.getId} - aucune action possible.")
+                self.next_move(self.task_path) # Se décale pour ne pas gêner ou reste sur place s'il n'est pas sur un coffre
             else:
                 self.find_best_path(task) # rempli le chemin de l'agent
                 self.task_in_progress = True

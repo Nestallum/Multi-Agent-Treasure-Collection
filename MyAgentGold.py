@@ -76,20 +76,12 @@ class MyAgentGold(MyAgent):
     
     def do_policy(self):
         self.forbidden_moves = []
+        # Si l'agent a un butin > à la moitié de son backpack, il part unload
         if not(self.task_in_progress) and self.backPack/2 < self.gold :
             task = self.env.posUnload
             self.find_best_path(task)
-            self.task_in_progress = True
-            self.next_move(self.task_path)
-            
-        
-        if not (len(self.mailBox) == 0):
-            _, content = self.readMail()
-            # Utilisation de ast.literal_eval pour convertir la chaîne en tuple
-            msg = ast.literal_eval(content.split("_")[1].strip())
-            print(msg)
-            self.other_agents_tasks.append(msg)
-            print(self.other_agents_tasks)
+            self.task_in_progress = True     
+
         if(self.task_in_progress): # Agent en cours de progression
             self.next_move(self.task_path)
         else:
