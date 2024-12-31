@@ -1,4 +1,4 @@
-
+import ast
 import Environment
 import math
 from itertools import combinations
@@ -17,6 +17,7 @@ class MyAgent:
         self.task_in_progress = False
         self.task_path = []
         self.other_agents_tasks = []
+        self.forbidden_moves = []
 
     def __eq__(self, other):
         if isinstance(other, self.__class__):
@@ -26,11 +27,11 @@ class MyAgent:
     #make the agent moves from (x1,y1) to (x2,y2)
     def move(self, x1, y1, x2, y2) :
         if x1 == self.posX and y1 == self.posY :
-            print("departure position OK")
+            #print("departure position OK")
             if self.env.move(self, x1, y1, x2, y2) :
                 self.posX = x2
                 self.posY = y2
-                print("deplacement OK")
+                #print("deplacement OK")
                 return 1
         return -1
 
@@ -78,6 +79,8 @@ class MyAgent:
         return self.tasks[index_task], min_distance
     
     def find_best_path(self, task):
+        if(task==None):
+            return []
         x_task, y_task = task
         x_current, y_current = self.posX, self.posY
         path = [] 
@@ -111,7 +114,7 @@ class MyAgent:
     def task_finding(self):
         env = self.env
         other = None
-
+        
         # Aucune tâche dispo
         if len(self.tasks) == 0:
             return None
@@ -128,6 +131,7 @@ class MyAgent:
 
         # Si l'autre est occupé on prend juste la tâche la plus proche
         if self.is_other_occuped():
+            self.send(other.getId(),f"T_{self.find_nearest_task()[0]}")
             return self.find_nearest_task()[0]
         
         # Si les deux sont disponibles, il peut y avoir une ou plusieurs tâches :
@@ -142,16 +146,18 @@ class MyAgent:
 
             # Cas 1 : L'agent self est plus proche
             if self_distance < other_distance:
+                self.send(other.getId(),f"T_{self.tasks[0]}")
                 return self.tasks[0]
 
             # Cas 2 : Les deux agents sont à la même distance
             if self_distance == other_distance:
                 # Le plus grand ID récupère la tâche
                 if self.id > other.getId():
+                    self.send(other.getId(),f"T_{self.tasks[0]}")
                     return self.tasks[0]
 
             # Cas 3 : L'autre agent est plus proche ou a un ID supérieur en cas d'égalité
-            self.other_agents_tasks.append(self.tasks[0])  # Marquer la tâche comme attribuée à l'autre agent
+              
             return None  # Aucune action pour self
         
         # Sinon, au moins 2 taches à partager
@@ -175,33 +181,99 @@ class MyAgent:
             if total_distance < min_distance:
                 min_distance = total_distance
                 best_task_for_self = task1
-                best_task_for_other = task2
+                
 
             if swapped_total_distance < min_distance:
                 min_distance = swapped_total_distance
                 best_task_for_self = task2
-                best_task_for_other = task1
+                
 
-        self.other_agents_tasks.append(best_task_for_other)
-
+        
+        self.send(other.getId(),f"T_{best_task_for_self}")
         return best_task_for_self
-
-    def do_policy(self):
-        if(self.task_in_progress): # Agent en cours de progression
-            self.next_move(self.task_path)
-        else:
-            self.fill_tasks() # Agent libre remplit sa liste de tâche
-            task = self.task_finding()
-            if(task is None):
-                print(f"Agent{self.getId} - aucune action possible.")
-            else:
-                self.find_best_path(task) # rempli le chemin de l'agent
-                self.task_in_progress = True
-                self.next_move(self.task_path)      
+     
 
     def __str__(self):
         res = self.id + " ("+ str(self.posX) + " , " + str(self.posY) + ")"
         return res
     
+    def CloseAgent(self):
+        list_ids = []
+        for a in self.env.agentSet.values() :
+            if(self.getId() != a.getId()):
+                dist = self.distance(self.posX,self.posY,a.posX,a.posY)
+                if(dist<=3):
+                    list_ids.append(a.getId())
+        return list_ids
     
+    def MessagetoAll(self):
+        for id in self.CloseAgent() :
+            if(len(self.task_path)!=0):
+                self.send(id,f"Move_{self.task_path[0]}")
+            else:
+                self.send(id,f"Fixe_{self.getPos()}")
+    
+    def readAllMail(self):
+        while (len(self.mailBox) != 0) :
+            id, content = self.readMail()
+            if(content.split("_")[0]=="T"):
+                # Utilisation de ast.literal_eval pour convertir la chaîne en tuple
+                msg = ast.literal_eval(content.split("_")[1].strip())
+                self.other_agents_tasks.append(msg)
+                
+            if(content.split("_")[0]=="Move"):
+                if((len(self.task_path)!=0) ):
+                    next_move_other=ast.literal_eval(content.split("_")[1].strip())
+                    if(self.task_path[0]==next_move_other): # meme action
+                        print("conflict") 
+                        if(self.getId()<id):# plus grand id garde son coup l'autre change
+                            print("conflict")
+                            self.forbidden_moves.append(next_move_other)
+                            self.task_path=self.conflict_handling(self.task_path[-1],self.forbidden_moves)
+                            self.MessagetoAll()
+                            
+            # if(content.split("_")[0]=="Fixe"):
+            #     if((len(self.task_path)!=0) ):
+            #         next_move_other=ast.literal_eval(content.split("_")[1].strip())
+            #         if(self.task_path[0]==next_move_other): # meme action
+            #             print("conflict") 
+            #             if(self.getId()<id):# plus grand id garde son coup l'autre change
+            #                 print("conflict")
+            #                 self.forbidden_moves.append(next_move_other)
+            #                 self.task_path=self.conflict_handling(self.task_path[-1],self.forbidden_moves)
+            #                 self.MessagetoAll()
+            
+    
+    def conflict_handling(self,task,forbidden_moves) :
+        if(task==None):
+            return []
+        x_task, y_task = task
+        x_current, y_current = self.posX, self.posY
+        path = [] 
+
+        # Possible directions (8 directions : N, S, E, W, and diagonals)
+        directions = [
+            (-1, 0), (1, 0),  # North, South
+            (0, -1), (0, 1),  # West, East
+            (-1, -1), (-1, 1),  # North-West, North-East
+            (1, -1), (1, 1)    # South-West, South-East
+        ]
+        
+        while (x_current, y_current) != (x_task, y_task):
+            best_distance = math.inf
+            best_move = None
+
+            for dx, dy in directions:
+                x_next, y_next = x_current + dx, y_current + dy
+                if (x_next,y_next) not in forbidden_moves :
+                    dist = self.distance(x_next, y_next, x_task, y_task)
+
+                    if dist < best_distance:
+                        best_distance = dist
+                        best_move = (x_next, y_next)
+
+            path.append(best_move)
+            x_current, y_current = best_move
+            print(f"best_move={best_move}")
+            self.task_path = path
 

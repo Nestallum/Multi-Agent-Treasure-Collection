@@ -37,10 +37,10 @@ class Environment:
     def move(self, agent:MyAgent, x1, y1, x2, y2):
         if x2 <0 or y2 < 0 or x2 >= self.tailleX or y2 >= self.tailleY or ( x2 != x1 -1 and  x2 != x1+1 and x2 != x1) \
                 or ( y2!= y1 -1 and  y2 != y1+1 and y2!=y1) : # invalid move
-            print("invalid move")
+            #print("invalid move")
             return False
         if (not self.isAt(agent, x1, y1)) or self.grilleAgent[x2][y2] != None  : # position already occupied
-            print("position not free")
+            #print("position not free")
             return False
         else :
             self.grilleAgent[x2][y2] = agent
@@ -56,23 +56,23 @@ class Environment:
 
         if self.isAt(agent, self.posUnload[0], self.posUnload[1]) :
             self.score = self.score + agent.getTreasure()
-            print("unload tres : {}".format(agent.getTreasure()))
+            #print("unload tres : {}".format(agent.getTreasure()))
 
     # make a Chest Agent open the chest
     def open(self, agent:MyAgentChest, x, y):
         if(self.grilleAgent[x][y] == agent and self.grilleTres[x][y] != None) :
             self.grilleTres[x][y].openChest()
-            print("chest open !")
+            #print("chest open !")
 
     # make an agent load some treasure
     def load(self, agent ):
         x , y = agent.getPos()
         if(self.grilleTres[x][y] != None  and self.grilleTres[x][y].getType() == agent.getType() ) :
-            print("load OK")
+            #print("load OK")
             agent.addTreasure(self.grilleTres[x][y].getValue())
             self.grilleTres[x][y].resetValue()
-        else :
-            print("load fail")
+        #else :
+            #print("load fail")
 
     #make an agent send a message
     def send(self,idSender, idReceiver, textContent):
@@ -84,7 +84,7 @@ class Environment:
             y = random.randint(0,self.tailleY - 1)
             t = random.randint(0,1)
             v = random.randint(1, maxVal)
-            print("new tres at", x, y)
+            #print("new tres at", x, y)
             self.addTreasure(Treasure(t,v), x, y)
 
 
