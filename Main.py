@@ -42,12 +42,12 @@ def loadFileConfig(nameFile) :
                 env.addAgent(agent)
                 cpt = cpt +1
 
-            # elif(ligneSplit[1]=="pierres"):
-            #     id = "agent" + str(cpt)
-            #     agent = MyAgentStones(id, int(ligneSplit[2]), int(ligneSplit[3]), env, int(ligneSplit[4]))
-            #     dictAgent[id] = agent
-            #     env.addAgent(agent)
-            #     cpt = cpt + 1
+            elif(ligneSplit[1]=="pierres"):
+                id = "agent" + str(cpt)
+                agent = MyAgentStones(id, int(ligneSplit[2]), int(ligneSplit[3]), env, int(ligneSplit[4]))
+                dictAgent[id] = agent
+                env.addAgent(agent)
+                cpt = cpt + 1
 
             if (ligneSplit[1] == "ouvr"):
                 id = "agent" + str(cpt)
@@ -193,8 +193,8 @@ def main():
             
         for a in lAg.values():
             #here the action of agent a at timestep t should be executed
-                a.do_policy()
-                print(a)
+            a.do_policy()
+            print(a)
         graphics.update_display(env)
             
 

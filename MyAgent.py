@@ -216,64 +216,72 @@ class MyAgent:
     def readAllMail(self):
         while (len(self.mailBox) != 0) :
             id, content = self.readMail()
-            if(content.split("_")[0]=="T"):
-                # Utilisation de ast.literal_eval pour convertir la chaîne en tuple
+            if(content.split("_")[0]=="T"): # Lis les mails task des autres agents et les ajoute à sa liste other agent task
                 msg = ast.literal_eval(content.split("_")[1].strip())
                 self.other_agents_tasks.append(msg)
                 
             if(content.split("_")[0]=="Move"):
-                if((len(self.task_path)!=0) ):
+                if((len(self.task_path)!=0)):
                     next_move_other=ast.literal_eval(content.split("_")[1].strip())
                     if(self.task_path[0]==next_move_other): # meme action
-                        print("conflict") 
+                        print("conflict move") 
                         if(self.getId()<id):# plus grand id garde son coup l'autre change
-                            print("conflict")
                             self.forbidden_moves.append(next_move_other)
                             self.task_path=self.conflict_handling(self.task_path[-1],self.forbidden_moves)
                             self.MessagetoAll()
                             
-            # if(content.split("_")[0]=="Fixe"):
-            #     if((len(self.task_path)!=0) ):
-            #         next_move_other=ast.literal_eval(content.split("_")[1].strip())
-            #         if(self.task_path[0]==next_move_other): # meme action
-            #             print("conflict") 
-            #             if(self.getId()<id):# plus grand id garde son coup l'autre change
-            #                 print("conflict")
-            #                 self.forbidden_moves.append(next_move_other)
-            #                 self.task_path=self.conflict_handling(self.task_path[-1],self.forbidden_moves)
-            #                 self.MessagetoAll()
+            if(content.split("_")[0]=="Fixe"):
+                if((len(self.task_path)!=0)):
+                    next_move_other=ast.literal_eval(content.split("_")[1].strip())
+                    if(self.task_path[0]==next_move_other): # meme action
+                        print("conflict fixe") 
+                        self.forbidden_moves.append(next_move_other)
+                        self.task_path=self.conflict_handling(self.task_path[-1],self.forbidden_moves)
+                        self.MessagetoAll()
             
     
-    def conflict_handling(self,task,forbidden_moves) :
-        if(task==None):
+    def conflict_handling(self, task, forbidden_moves):
+        if task is None:
             return []
+
         x_task, y_task = task
         x_current, y_current = self.posX, self.posY
-        path = [] 
+        path = []
 
-        # Possible directions (8 directions : N, S, E, W, and diagonals)
+        # Possible directions (8 directions: N, S, E, W, and diagonals)
         directions = [
             (-1, 0), (1, 0),  # North, South
             (0, -1), (0, 1),  # West, East
             (-1, -1), (-1, 1),  # North-West, North-East
             (1, -1), (1, 1)    # South-West, South-East
         ]
-        
+
+        first_move = True  # Flag to track if it's the first move
+
         while (x_current, y_current) != (x_task, y_task):
             best_distance = math.inf
             best_move = None
 
             for dx, dy in directions:
                 x_next, y_next = x_current + dx, y_current + dy
-                if (x_next,y_next) not in forbidden_moves :
-                    dist = self.distance(x_next, y_next, x_task, y_task)
 
-                    if dist < best_distance:
-                        best_distance = dist
-                        best_move = (x_next, y_next)
+                # Check forbidden moves only for the first move
+                if first_move and (x_next, y_next) in forbidden_moves:
+                    continue
+
+                dist = self.distance(x_next, y_next, x_task, y_task)
+
+                if dist < best_distance:
+                    best_distance = dist
+                    best_move = (x_next, y_next)
+
+            if best_move is None:
+                raise ValueError("No valid moves available to reach the task.")
 
             path.append(best_move)
             x_current, y_current = best_move
-            print(f"best_move={best_move}")
-            self.task_path = path
+            first_move = False  # After the first move, no longer check forbidden moves
+
+        self.task_path = path
+        return path
 
