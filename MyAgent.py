@@ -123,7 +123,6 @@ class MyAgent:
             return self.find_nearest_task()[0]
         
         # Si les deux sont disponibles :
-        # Cas 1 : Une seule tâche à partager
 
         # Trouver l'autre agent de même type
         for a in env.agentSet.values():
@@ -135,13 +134,14 @@ class MyAgent:
         other_posX, other_posY = other.getPos()
 
         # Déterminer qui récupère la tâche
+        # Cas 1 : Une seule tâche à partager
         if len(self.tasks) == 1:
             task_X, task_Y = self.tasks[0]
             self_distance = self.distance(self.posX, self.posY, task_X, task_Y)
             other_distance =  self.distance(other_posX, other_posY, task_X, task_Y)
             if(self_distance < other_distance): # Le plus proche récupère la tâche
                 return self.tasks[0]
-            elif(self_distance == other_distance): # Même distance, le plus grand Id récupère la tâche (choix arbitraire)
+            elif(self_distance == other_distance): # Même distance, le plus grand Id récupère la tâche (choix arbitraire car pas d'impact)
                 if(self.id > other.getId()):
                     return self.tasks[0]
             else:
