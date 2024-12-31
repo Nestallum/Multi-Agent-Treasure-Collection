@@ -139,9 +139,9 @@ class MyAgent:
             task_X, task_Y = self.tasks[0]
             self_distance = self.distance(self.posX, self.posY, task_X, task_Y)
             other_distance =  self.distance(other_posX, other_posY, task_X, task_Y)
-            if(self_distance < other_distance): # Le plus proche fait l'action
+            if(self_distance < other_distance): # Le plus proche récupère la tâche
                 return self.tasks[0]
-            elif(self_distance == other_distance): # Même distance, le plus grand Id récupère l'action (choix arbitraire)
+            elif(self_distance == other_distance): # Même distance, le plus grand Id récupère la tâche (choix arbitraire)
                 if(self.id > other.getId()):
                     return self.tasks[0]
             else:
