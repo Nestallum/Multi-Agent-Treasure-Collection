@@ -114,7 +114,7 @@ class MyAgent:
 
         # Aucune tâche dispo
         if len(self.tasks) == 0:
-            return (self.posX, self.posY)
+            return None
 
         # Au moins une tâche dispo
         # 2 possibilités : l'autre agent n'est pas dispo ou les deux sont disponibles
