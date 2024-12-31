@@ -16,7 +16,6 @@ class MyAgent:
         self.tasks = []
         self.task_in_progress = False
         self.task_path = []
-        self.task_pos = tuple() # so we can reset task in progress if agent at task pos
         self.other_agents_tasks = []
 
     def __eq__(self, other):
@@ -124,13 +123,12 @@ class MyAgent:
             return self.find_nearest_task()[0]
         
         # Si les deux sont disponibles :
-        # cas 1 : Une seule tâche à partager
+        # Cas 1 : Une seule tâche à partager
 
-        # Cas 2 : au moins 2 taches à partager
         # Trouver l'autre agent de même type
-        for ag in env.agentSet.values():
-            if ag.getType() == self.getType() and not self.__eq__(ag):
-                other = ag
+        for a in env.agentSet.values():
+            if a.getType() == self.getType() and not self.__eq__(a):
+                other = a
                 break
 
         # Coordonnées de l'autre agent
@@ -149,7 +147,8 @@ class MyAgent:
             else:
                 self.other_agents_tasks.append(self.tasks[0])
                 return None # Aucune action
-
+        
+        # Cas 2 : au moins 2 taches à partager
         # Initialisation pour la recherche de la meilleure combinaison
         min_distance = float('inf')
         best_task_for_self = None
