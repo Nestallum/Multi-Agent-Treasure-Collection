@@ -51,4 +51,4 @@ class MyAgentChest(MyAgent) :
             x, y = self.other_agents_tasks[-1] # on récupère la tâche de l'autre agent
             if not self.env.grilleTres[x][y].isOpen(): # l'agent n'a pas encore ouvert le coffre
                 return True
-            return False
+        return False
