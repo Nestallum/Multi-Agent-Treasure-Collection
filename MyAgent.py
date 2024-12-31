@@ -107,6 +107,7 @@ class MyAgent:
 
         self.task_path = path
 
+
     def task_finding(self):
         env = self.env
         other = None
@@ -117,38 +118,43 @@ class MyAgent:
 
         # Au moins une tâche dispo
         # 2 possibilités : l'autre agent n'est pas dispo ou les deux sont disponibles
-
-        # Si l'autre est occupé on prend juste la tâche la plus proche
-        if self.is_other_occuped():
-            return self.find_nearest_task()[0]
-        
-        # Si les deux sont disponibles :
-
         # Trouver l'autre agent de même type
         for a in env.agentSet.values():
             if a.getType() == self.getType() and not self.__eq__(a):
                 other = a
                 break
-
         # Coordonnées de l'autre agent
         other_posX, other_posY = other.getPos()
 
-        # Déterminer qui récupère la tâche
-        # Cas 1 : Une seule tâche à partager
-        if len(self.tasks) == 1:
-            task_X, task_Y = self.tasks[0]
-            self_distance = self.distance(self.posX, self.posY, task_X, task_Y)
-            other_distance =  self.distance(other_posX, other_posY, task_X, task_Y)
-            if(self_distance < other_distance): # Le plus proche récupère la tâche
-                return self.tasks[0]
-            elif(self_distance == other_distance): # Même distance, le plus grand Id récupère la tâche (choix arbitraire car pas d'impact)
-                if(self.id > other.getId()):
-                    return self.tasks[0]
-            else:
-                self.other_agents_tasks.append(self.tasks[0])
-                return None # Aucune action
+        # Si l'autre est occupé on prend juste la tâche la plus proche
+        if self.is_other_occuped():
+            return self.find_nearest_task()[0]
         
-        # Cas 2 : au moins 2 taches à partager
+        # Si les deux sont disponibles, il peut y avoir une ou plusieurs tâches :
+        # Si une tâche à partager : Déterminer qui récupère la tâche
+        if len(self.tasks) == 1:
+            # Récupérer les coordonnées de la tâche unique
+            task_X, task_Y = self.tasks[0]
+
+            # Calculer les distances entre l'agent et la tâche, et entre l'autre agent et la tâche
+            self_distance = self.distance(self.posX, self.posY, task_X, task_Y)
+            other_distance = self.distance(other_posX, other_posY, task_X, task_Y)
+
+            # Cas 1 : L'agent self est plus proche
+            if self_distance < other_distance:
+                return self.tasks[0]
+
+            # Cas 2 : Les deux agents sont à la même distance
+            if self_distance == other_distance:
+                # Le plus grand ID récupère la tâche
+                if self.id > other.getId():
+                    return self.tasks[0]
+
+            # Cas 3 : L'autre agent est plus proche ou a un ID supérieur en cas d'égalité
+            self.other_agents_tasks.append(self.tasks[0])  # Marquer la tâche comme attribuée à l'autre agent
+            return None  # Aucune action pour self
+        
+        # Sinon, au moins 2 taches à partager
         # Initialisation pour la recherche de la meilleure combinaison
         min_distance = float('inf')
         best_task_for_self = None
@@ -190,6 +196,7 @@ class MyAgent:
                 print(f"Agent{self.getId} - aucune action possible.")
             else:
                 self.find_best_path(task) # rempli le chemin de l'agent
+                self.task_in_progress = True
                 self.next_move(self.task_path)      
 
     def __str__(self):

@@ -7,7 +7,7 @@ from Treasure import Treasure
 from Graphics import Graphics
 import random
 
-horizon = 100
+horizon = 2000
 
 def loadFileConfig(nameFile) :
 
@@ -35,21 +35,21 @@ def loadFileConfig(nameFile) :
                 env.addTreasure(tres, int(ligneSplit[2]), int(ligneSplit[3]))
 
         elif(ligneSplit[0]=="AG") : #new agent
-            if(ligneSplit[1]=="or"):
-                id = "agent" + str(cpt)
-                agent = MyAgentGold(id, int(ligneSplit[2]), int(ligneSplit[3]), env, int(ligneSplit[4]))
-                dictAgent[id] = agent
-                env.addAgent(agent)
-                cpt = cpt +1
+            # if(ligneSplit[1]=="or"):
+            #     id = "agent" + str(cpt)
+            #     agent = MyAgentGold(id, int(ligneSplit[2]), int(ligneSplit[3]), env, int(ligneSplit[4]))
+            #     dictAgent[id] = agent
+            #     env.addAgent(agent)
+            #     cpt = cpt +1
 
-            elif(ligneSplit[1]=="pierres"):
-                id = "agent" + str(cpt)
-                agent = MyAgentStones(id, int(ligneSplit[2]), int(ligneSplit[3]), env, int(ligneSplit[4]))
-                dictAgent[id] = agent
-                env.addAgent(agent)
-                cpt = cpt + 1
+            # elif(ligneSplit[1]=="pierres"):
+            #     id = "agent" + str(cpt)
+            #     agent = MyAgentStones(id, int(ligneSplit[2]), int(ligneSplit[3]), env, int(ligneSplit[4]))
+            #     dictAgent[id] = agent
+            #     env.addAgent(agent)
+            #     cpt = cpt + 1
 
-            elif (ligneSplit[1] == "ouvr"):
+            if (ligneSplit[1] == "ouvr"):
                 id = "agent" + str(cpt)
                 agent = MyAgentChest(id, int(ligneSplit[2]), int(ligneSplit[3]), env)
                 dictAgent[id] = agent
