@@ -33,13 +33,19 @@ class MyAgentChest(MyAgent) :
         if(self.opened):
             self.opened = False
             if not self.task_in_progress: # A ouvert mais n'a pas bougé
-                directions = [(-1, 0), (1, 0), (0, -1), (0, 1)]  # Déplacements possibles
+                directions = [
+                    (-1, 0), (1, 0),  # North, South
+                    (0, -1), (0, 1),  # West, East
+                    (-1, -1), (-1, 1),  # North-West, North-East
+                    (1, -1), (1, 1)    # South-West, South-East
+                ]  # Déplacements possibles
                 for dx, dy in directions:
                     new_x, new_y = self.posX + dx, self.posY + dy
                     # Vérifie si la position est valide et libre
                     if 0 <= new_x < self.env.tailleX and 0 <= new_y < self.env.tailleY and self.env.grilleAgent[new_x][new_y] == None:
                         self.move(self.posX, self.posY, new_x, new_y)
-                        return
+                        break
+
         if(self.task_in_progress):
             if len(path) == 0: # Arrivé à la position de la tâche
                 self.open()
@@ -63,7 +69,6 @@ class MyAgentChest(MyAgent) :
         self.tasks = treasures
 
     def is_other_occuped(self):
-        print(self.other_agents_tasks)
         if(not self.other_agents_tasks == []): # l'autre agent est peut être occupé
             x, y = self.other_agents_tasks[-1] # on récupère la tâche de l'autre agent
             if not self.env.grilleTres[x][y].isOpen(): # l'agent n'a pas encore ouvert le coffre

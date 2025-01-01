@@ -28,11 +28,9 @@ def loadFileConfig(nameFile) :
         ligneSplit = ligne.split(":")
         if(ligneSplit[0]=="tres"): # new treasure
             if(ligneSplit[1]=="or"):
-
                 env.addTreasure(Treasure(1, int(ligneSplit[4])), int(ligneSplit[2]), int(ligneSplit[3]))
             elif(ligneSplit[1]=="pierres"):
-                tres = Treasure(2, int(ligneSplit[4]))
-                env.addTreasure(tres, int(ligneSplit[2]), int(ligneSplit[3]))
+                env.addTreasure(Treasure(2, int(ligneSplit[4])), int(ligneSplit[2]), int(ligneSplit[3]))
 
         elif(ligneSplit[0]=="AG") : #new agent
             if(ligneSplit[1]=="or"):
@@ -42,14 +40,14 @@ def loadFileConfig(nameFile) :
                 env.addAgent(agent)
                 cpt = cpt +1
 
-            elif(ligneSplit[1]=="pierres"):
+            if(ligneSplit[1]=="pierres"):
                 id = "agent" + str(cpt)
                 agent = MyAgentStones(id, int(ligneSplit[2]), int(ligneSplit[3]), env, int(ligneSplit[4]))
                 dictAgent[id] = agent
                 env.addAgent(agent)
                 cpt = cpt + 1
 
-            if (ligneSplit[1] == "ouvr"):
+            elif (ligneSplit[1] == "ouvr"):
                 id = "agent" + str(cpt)
                 agent = MyAgentChest(id, int(ligneSplit[2]), int(ligneSplit[3]), env)
                 dictAgent[id] = agent
@@ -177,24 +175,25 @@ def main():
 
 
     # make the agents execute their plans
-    for t in range(1000):
-        conflict_free = False
+    for t in range(3000):
         if(t%10 == 0):
             env.gen_new_treasures(random.randint(0,5), 7)
+        conflict_free = False
         for a in lAg.values():
-                a.MessagetoAll()
-        while(not(conflict_free)):
+                a.declare_intention()
+        while(not(conflict_free)):      
             for a in lAg.values():
-                a.readAllMail()
-            conflict_free = True
+                a.resolve_conflicts()
+            conflict_free = True # On fait l'hypothèse qu'il n'y a plus de conflits
             for a in lAg.values():
-                if(len(a.mailBox)!=0):
+                if(len(a.mailBox)!=0): # Si pour au moins un agent la boite mail n'est pas vide, alors il y a conflit
                    conflict_free = False 
             
         for a in lAg.values():
             #here the action of agent a at timestep t should be executed
             a.do_policy()
-            print(a)
+            # print(a)
+        print(env)
         graphics.update_display(env)
             
 
