@@ -33,7 +33,13 @@ class MyAgentChest(MyAgent) :
         if(self.opened):
             self.opened = False
             if not self.task_in_progress: # A ouvert mais n'a pas bougé
-                self.move(self.posX, self.posY, self.posX+1,self.posY+1) # Random move pour ne pas gêner l'accès au coffre
+                directions = [(-1, 0), (1, 0), (0, -1), (0, 1)]  # Déplacements possibles
+                for dx, dy in directions:
+                    new_x, new_y = self.posX + dx, self.posY + dy
+                    # Vérifie si la position est valide et libre
+                    if 0 <= new_x < self.env.tailleX and 0 <= new_y < self.env.tailleY and self.env.grilleAgent[new_x][new_y] == None:
+                        self.move(self.posX, self.posY, new_x, new_y)
+                        return
         if(self.task_in_progress):
             if len(path) == 0: # Arrivé à la position de la tâche
                 self.open()
