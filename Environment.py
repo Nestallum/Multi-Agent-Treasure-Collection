@@ -23,7 +23,7 @@ class Environment:
     #add a treasure to the environment
     def addTreasure(self, tresor : Treasure, x, y):
         if(self.grilleTres[x][y] == None):
-            self.grilleTres[x][y] =  tresor
+            self.grilleTres[x][y] = tresor
 
     # add an agent to the set of agents
     def addAgentSet(self, dictAgent):
@@ -37,10 +37,10 @@ class Environment:
     def move(self, agent:MyAgent, x1, y1, x2, y2):
         if x2 <0 or y2 < 0 or x2 >= self.tailleX or y2 >= self.tailleY or ( x2 != x1 -1 and  x2 != x1+1 and x2 != x1) \
                 or ( y2!= y1 -1 and  y2 != y1+1 and y2!=y1) : # invalid move
-            #print("invalid move")
+            print("invalid move")
             return False
-        if (not self.isAt(agent, x1, y1)) or self.grilleAgent[x2][y2] != None  : # position already occupied
-            #print("position not free")
+        if (not self.isAt(agent, x1, y1)) or self.grilleAgent[x2][y2] != None : # position already occupied
+            print("position not free")
             return False
         else :
             self.grilleAgent[x2][y2] = agent
@@ -67,7 +67,7 @@ class Environment:
     # make an agent load some treasure
     def load(self, agent ):
         x , y = agent.getPos()
-        if(self.grilleTres[x][y] != None  and self.grilleTres[x][y].getType() == agent.getType() ) :
+        if(self.grilleTres[x][y] != None  and self.grilleTres[x][y].getType() == agent.getType()) :
             #print("load OK")
             agent.addTreasure(self.grilleTres[x][y].getValue())
             self.grilleTres[x][y].resetValue()
@@ -82,9 +82,9 @@ class Environment:
         for i in range(nb) :
             x = random.randint(0,self.tailleX - 1)
             y = random.randint(0,self.tailleY - 1)
-            t = random.randint(0,1)
+            t = random.randint(1,2)
             v = random.randint(1, maxVal)
-            #print("new tres at", x, y)
+            print("new tres at", x, y)
             self.addTreasure(Treasure(t,v), x, y)
 
 
