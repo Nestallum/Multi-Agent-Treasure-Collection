@@ -1,9 +1,10 @@
 import ast
+import random
 import Environment
 import math
 from itertools import combinations
 import math
-
+import random
 
 class MyAgent:
 
@@ -79,8 +80,10 @@ class MyAgent:
         return self.tasks[index_task], min_distance
     
     def find_best_path(self, task):
-        if(task==None):
+
+        if(task == None):
             return []
+        
         x_task, y_task = task
         x_current, y_current = self.posX, self.posY
         path = [] 
@@ -109,7 +112,6 @@ class MyAgent:
 
             path.append(best_move)
             x_current, y_current = best_move
-
         self.task_path = path
 
 
@@ -133,7 +135,7 @@ class MyAgent:
 
         # Si l'autre est occupé on prend juste la tâche la plus proche
         if self.is_other_occuped():
-            self.send(other.getId(),f"T_{self.find_nearest_task()[0]}")
+            self.send(other.getId(),f"Task_{self.find_nearest_task()[0]}")
             return self.find_nearest_task()[0]
         
         # Si les deux sont disponibles, il peut y avoir une ou plusieurs tâches :
@@ -148,14 +150,14 @@ class MyAgent:
 
             # Cas 1 : L'agent self est plus proche
             if self_distance < other_distance:
-                self.send(other.getId(),f"T_{self.tasks[0]}")
+                self.send(other.getId(),f"Task_{self.tasks[0]}")
                 return self.tasks[0]
 
             # Cas 2 : Les deux agents sont à la même distance
             if self_distance == other_distance:
                 # Le plus grand ID récupère la tâche
                 if int(self.id[-1]) > int(other.getId()[-1]):
-                    self.send(other.getId(),f"T_{self.tasks[0]}")
+                    self.send(other.getId(),f"Task_{self.tasks[0]}")
                     return self.tasks[0]
 
             # Cas 3 : L'autre agent est plus proche ou a un ID supérieur en cas d'égalité
@@ -188,7 +190,7 @@ class MyAgent:
                 min_distance = swapped_total_distance
                 best_task_for_self = task2
         
-        self.send(other.getId(),f"T_{best_task_for_self}")
+        self.send(other.getId(),f"Task_{best_task_for_self}")
         return best_task_for_self
      
 
@@ -204,47 +206,160 @@ class MyAgent:
                 if(dist<=3):
                     list_ids.append(a.getId())
         return list_ids
+
     
     def declare_intention(self):
-        for id in self.CloseAgent() :
-            if(self.task_path):
-                self.send(id,f"Move_{self.task_path[0]}")
-            else:
-                self.send(id,f"Fixe_{self.getPos()}")
+        """
+        Déclare l'intention de l'agent (position actuelle, prochaine position, position finale) à tous les agents proches.
+        Si l'agent n'a pas de chemin (reste sur place), envoie un message "Fixe".
+        """
+        current_pos = self.getPos()
+        next_move = self.task_path[0] if self.task_path else current_pos
     
+        for id in self.CloseAgent():
+            if next_move == current_pos:
+                # Si l'agent reste sur place
+                self.send(id, f"Fixe_{current_pos}")
+            else:
+                last_move = self.task_path[-1]
+                # Sinon, envoie le prochain mouvement et le mouvement final
+                self.send(id, f"Move_{current_pos}_{next_move}_{last_move}")
+
+
     def resolve_conflicts(self):
         conflict = False
-        while (len(self.mailBox) != 0) :
+
+        while len(self.mailBox) != 0:
             id, content = self.readMail()
-            if(content.split("_")[0]=="T"): # Lis les mails task des autres agents et les ajoute à sa liste other agent task
+
+            if(content.split("_")[0]=="Task"): # Lis les mails task des autres agents et les ajoute à sa liste other agent task
                 msg = ast.literal_eval(content.split("_")[1].strip())
                 self.other_agents_tasks.append(msg)
-                
-            if(content.split("_")[0]=="Move"):
-                if self.task_path:
-                    next_move_other = ast.literal_eval(content.split("_")[1].strip())
-                    if(self.task_path[0] == next_move_other): # si un agent veut faire la même action
-                            conflict = True
-                            self.forbidden_moves.append(next_move_other)
-                            self.find_alternative_path(self.task_path[-1],self.forbidden_moves)
-                                
-            if(content.split("_")[0]=="Fixe"):
-                if((len(self.task_path)!=0)):
-                    next_move_other=ast.literal_eval(content.split("_")[1].strip())
-                    if(self.task_path[0]==next_move_other): # meme action
+
+            # Vérifie le format du message
+            if content.startswith("Move_"):
+                parts = content.split("_")
+                if len(parts) == 4:  # Vérifie que le message est bien formé
+                    current_pos_other = ast.literal_eval(parts[1])  # Position actuelle de l'autre agent
+                    next_move_other = ast.literal_eval(parts[2])    # Prochain mouvement de l'autre agent
+                    final_move_other = ast.literal_eval(parts[3])   # Dernier mouvement de l'autre agent
+
+                if self.task_path and self.task_path[0] == next_move_other: # Cas 1 : les deux veulent aller au même endroit
+                    wanted_case = self.task_path[0]
+                    final_move_self = self.task_path[-1]
+                    # Cas 1 : La case convoitée est la case finale de l'agent courant
+                    if wanted_case == final_move_self and not wanted_case == final_move_other:
+                        None
+                    # Cas 2 : La case convoitée est la case finale de l'autre agent
+                    elif not wanted_case == final_move_self and wanted_case == final_move_other:
                         conflict = True
                         self.forbidden_moves.append(next_move_other)
-                        self.find_alternative_path(self.task_path[-1],self.forbidden_moves)
-        if conflict:              
-            self.declare_intention()    
-    
-    def find_alternative_path(self, task, forbidden_moves):
+                        self.find_alternative_path(self.task_path[-1], self.forbidden_moves) # On le contourne
+                    # Cas 3 : La case convoitée est la case finale des deux agents
+                    elif wanted_case == final_move_self and wanted_case == final_move_other:
+                        if self.getId() < id: # Le plus petit id attend, l'autre va à sa case finale
+                            self.find_alternative_path(self.task_path[-1], self.forbidden_moves, fixed=True)
+                    # Cas 4 : La case convoitée est une case intermédiaire de leur chemin
+                    elif not wanted_case == final_move_self and not wanted_case == final_move_other:
+                        if self.getId() < id: # Le plus petit id contourne, l'autre continue sa route
+                            conflict = True
+                            self.forbidden_moves.append(next_move_other)
+                            self.find_alternative_path(self.task_path[-1], self.forbidden_moves)
+
+
+                elif self.task_path and self.task_path[0] == current_pos_other: # Cas 2 : L'agent courant veut aller sur une case occupée d'un agent non fixe
+                    if self.getPos() == next_move_other: # Ils vont se rentrer dedans
+                        conflict = True
+                        self.forbidden_moves.append(next_move_other)
+                        self.find_alternative_path(self.task_path[-1], self.forbidden_moves)
+                    else:
+                        self.find_alternative_path(self.task_path[-1], self.forbidden_moves, fixed=True) 
+
+            elif content.startswith("Fixe_"):
+                parts = content.split("_")
+                if len(parts) == 2:  # Vérifie que le message est bien formé
+                    fixed_position = ast.literal_eval(parts[1])
+
+                    if self.task_path and self.task_path[0] == fixed_position: # Cas : Un agent fixe bloque notre chemin
+                            if fixed_position == self.task_path[-1]: # L'agent fixe bloque notre destination finale
+                                print("DANS LE CAS---------------------------------------------------------------------------------")
+                                self.find_alternative_path(self.task_path[-1], self.forbidden_moves, fixed=True) # On s'arrête pour le prochain coup
+                            else : # L'agent bloque une case intermédiaire du chemin, on contourne
+                                conflict = True
+                                self.forbidden_moves.append(fixed_position)
+                                self.find_alternative_path(self.task_path[-1], self.forbidden_moves)
+
+            if conflict:
+                self.declare_intention()
+
+
+    # def resolve_conflicts(self):
+    #     """
+    #     Résout les conflits de déplacement en ajustant dynamiquement les intentions.
+    #     Gère également les conflits face-à-face et les agents immobiles qui bloquent le prochain mouvement.
+    #     """
+    #     conflict = False
+
+    #     while len(self.mailBox) != 0:
+    #         id, content = self.readMail()
+
+    #         if content.split("_")[0] == "Move":
+    #             parts = content.split("_")
+    #             current_pos_other = ast.literal_eval(parts[1])  # Position actuelle de l'autre agent
+    #             next_move_other = ast.literal_eval(parts[2])    # Prochain mouvement de l'autre agent
+
+    #             # Cas 1 : Deux agents veulent aller sur la même case
+    #             if self.task_path and self.task_path[0] == next_move_other:
+    #                 if self.getId() > id:
+    #                     conflict = True
+    #                     self.forbidden_moves.append(next_move_other)
+    #                     self.find_alternative_path(self.task_path[-1], self.forbidden_moves)
+
+    #             # Cas 2 : Conflit face-à-face (swap)
+    #             if self.task_path and self.task_path[0] == current_pos_other and next_move_other == self.getPos():
+    #                 # Le plus petit ID reste sur place, l'autre contourne
+    #                 if self.getId() < id:
+    #                     print(f"Conflit face-à-face détecté entre {self.getId()} et {id}. {self.getId()} reste sur place.")
+    #                     self.task_path = [self.getPos()]  # Reste sur place
+    #                 else:
+    #                     print(f"Conflit face-à-face détecté entre {self.getId()} et {id}. {self.getId()} contourne.")
+    #                     conflict = True
+    #                     self.forbidden_moves.append(current_pos_other)
+    #                     self.find_alternative_path(self.task_path[-1], self.forbidden_moves)
+
+    #         elif content.split("_")[0] == "Fixe":
+    #             fixed_position = ast.literal_eval(content.split("_")[1].strip())
+
+    #             # Cas : Un agent fixe bloque notre prochain mouvement
+    #             if self.task_path and self.task_path[0] == fixed_position:
+    #                 print(f"Conflit avec agent fixe détecté pour {self.getId()}. Reste sur place.")
+    #                 self.task_path = [self.getPos()]  # Reste sur place pour ce tour
+    #                 conflict = True
+
+    #     if conflict:
+    #         self.declare_intention()
+
+    def find_alternative_path(self, task, forbidden_moves, fixed=False):
+        """
+        Trouve un chemin alternatif si le prochain mouvement est bloqué.
+        Si `fixed=True`, l'agent reste sur place pour le premier mouvement.
+        Args:
+            task (tuple): La position cible.
+            forbidden_moves (list): Les mouvements interdits.
+            fixed (bool): Si True, le premier mouvement est fixé à la position actuelle de l'agent.
+        """
+
         if task is None:
             return []
 
         x_task, y_task = task
         x_current, y_current = self.posX, self.posY
-        path = []
+        path = []   
+        first_move = True  # Flag to track if it's the first move
+
+        if fixed:
+            path.append(self.getPos())
+            first_move = False  # On ne change pas le first move car on restera sur place
 
         # Possible directions (8 directions: N, S, E, W, and diagonals)
         directions = [
@@ -254,90 +369,75 @@ class MyAgent:
             (1, -1), (1, 1)    # South-West, South-East
         ]
 
-        first_move = True  # Flag to track if it's the first move
-
         while (x_current, y_current) != (x_task, y_task):
+            valid_moves = []
             best_distance = math.inf
             best_move = None
 
             for dx, dy in directions:
                 x_next, y_next = x_current + dx, y_current + dy
                 if 0 <= x_next < self.env.tailleX and 0 <= y_next < self.env.tailleY:
-                    # Check forbidden moves only for the first move
-                    if first_move and (x_next, y_next) in forbidden_moves:
-                        continue
-                
-                    dist = self.distance(x_next, y_next, x_task, y_task)
+                    if first_move:
+                        # Ajoute uniquement les cases valides qui ne sont pas interdites
+                        if (x_next, y_next) not in forbidden_moves:
+                            valid_moves.append((x_next, y_next))
+                    else:
+                        # Minimise la distance pour les mouvements suivants
+                        dist = self.distance(x_next, y_next, x_task, y_task)
+                        if dist < best_distance:
+                            best_distance = dist
+                            best_move = (x_next, y_next)
 
-                    if dist < best_distance:
-                        best_distance = dist
-                        best_move = (x_next, y_next)
+            if first_move:
+                if valid_moves:
+                    # Choisit un mouvement aléatoire parmi les cases valides
+                    best_move = random.choice(valid_moves)
+                else:
+                    # Si aucune case valide n'est trouvée, reste sur place
+                    print(f"Aucun mouvement valide trouvé. L'agent {self.getId()} reste sur place à {self.getPos()}.")
+                    best_move = self.getPos()
+
+                first_move = False
 
             if best_move is None:
                 raise ValueError("No valid moves available to reach the task.")
 
             path.append(best_move)
             x_current, y_current = best_move
-            first_move = False  # After the first move, no longer check forbidden moves
-        print(f"ALTERNATIVE PATH {path} TASK {task} ---------------------------------------------------------------------------------")
+            
         self.task_path = path
+
 
     def go_to_unload(self):
         """
-        Génère un chemin pour que l'agent aille au dépôt sans collision en respectant les règles.
-        L'agent doit entrer par le haut, accéder au dépôt, et ressortir par le bas.
+        Génère un chemin pour qu'un agent aille au dépôt sans collision en respectant les règles.
+        L'agent doit contourner et arriver par (0, 0) avant d'accéder au dépôt (5, 0).
 
         Returns:
             list: Liste des coordonnées formant le chemin.
         """
         path = []
-        depot_position = (5, 0)  # Coordonnées fixes du dépôt
-        entry_position = (4, 0)  # Position d'entrée au-dessus du dépôt
-        exit_position = (6, 0)   # Position de sortie en dessous du dépôt
+        depot_position = (5, 0)  # Position fixe du dépôt
+        intermediate_position = (3, 0)  # Position d'entrée obligatoire (contournement)
 
-        # Récupère la position actuelle de l'agent
+        # Position actuelle de l'agent
         agent_position = self.getPos()
         ay, ax = agent_position
 
-        # Si l'agent est sous le dépôt, contourner pour remonter vers l'entrée
-        if ay > 5:  # Agent sous le dépôt
-            path += self.go_around(agent_position, entry_position)
+        # Cas 1 : Agent sous le dépôt, contourner pour rejoindre (0, 0)
+        if ay > depot_position[0]:
+            # Contourner par la droite pour remonter à l'entrée obligatoire (0, 0)
+            path += self.create_path(agent_position, (ay, ax + 1))  # Décale vers la droite
+            path += self.create_path((ay, ax + 1), intermediate_position)  # Monte vers (0, 0)
         else:
-            # Aller directement à l'entrée
-            path += self.create_path(agent_position, entry_position)
+            # Cas 2 : Agent à côté ou au-dessus, aller directement à l'entrée obligatoire
+            path += self.create_path(agent_position, intermediate_position)
 
-        # Ajouter la case de dépôt
-        path.append(depot_position)
+        # Ajouter le chemin du point intermédiaire (0, 0) au dépôt (5, 0)
+        path += self.create_path(intermediate_position, depot_position)
 
-        # Ajouter la sortie
-        path.append(exit_position)
-
-        return path
-
-    def go_around(self, start, target):
-        """
-        Génère un chemin pour contourner le dépôt.
-        Args:
-            start (tuple): Position actuelle de l'agent (y, x).
-            target (tuple): Position cible (y, x).
-        Returns:
-            list: Chemin contournant le dépôt.
-        """
-        sy, sx = start
-        ty, tx = target
-        path = []
-
-        # Contourner par la droite ou la gauche selon la position
-        if sx < tx:
-            # Contourner par la droite
-            path += self.create_path((sy, sx), (sy, sx + 1))
-            path += self.create_path((sy, sx + 1), target)
-        else:
-            # Contourner par la gauche
-            path += self.create_path((sy, sx), (sy, sx - 1))
-            path += self.create_path((sy, sx - 1), target)
-
-        return path
+        # Met à jour le chemin de tâche de l'agent
+        self.task_path = path
 
     def create_path(self, start, target):
         """
@@ -352,7 +452,7 @@ class MyAgent:
         sy, sx = start
         ty, tx = target
 
-        # Déplacement en y
+        # Déplacement vertical (y)
         while sy != ty:
             if sy < ty:
                 sy += 1
@@ -360,7 +460,7 @@ class MyAgent:
                 sy -= 1
             path.append((sy, sx))
 
-        # Déplacement en x
+        # Déplacement horizontal (x)
         while sx != tx:
             if sx < tx:
                 sx += 1
@@ -369,4 +469,3 @@ class MyAgent:
             path.append((sy, sx))
 
         return path
-

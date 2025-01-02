@@ -40,7 +40,7 @@ class Environment:
             print("invalid move")
             return False
         if (not self.isAt(agent, x1, y1)) or self.grilleAgent[x2][y2] != None : # position already occupied
-            print("position not free")
+            # print("position not free")
             return False
         else :
             self.grilleAgent[x2][y2] = agent
@@ -85,8 +85,8 @@ class Environment:
             t = random.randint(1,2)
             v = random.randint(1, maxVal)
             print("new tres at", x, y)
-            self.addTreasure(Treasure(t,v), x, y)
-
+            if not (x,y) == self.posUnload: # Ne pas créer de trésor sur le dépot !!!
+                self.addTreasure(Treasure(t,v), x, y)
 
     def __str__(self):
         str = ""

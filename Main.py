@@ -7,7 +7,7 @@ from Treasure import Treasure
 from Graphics import Graphics
 import random
 
-horizon = 2000
+horizon = 1000
 
 def loadFileConfig(nameFile) :
 
@@ -47,7 +47,7 @@ def loadFileConfig(nameFile) :
                 env.addAgent(agent)
                 cpt = cpt + 1
 
-            elif (ligneSplit[1] == "ouvr"):
+            if (ligneSplit[1] == "ouvr"):
                 id = "agent" + str(cpt)
                 agent = MyAgentChest(id, int(ligneSplit[2]), int(ligneSplit[3]), env)
                 dictAgent[id] = agent
@@ -175,27 +175,32 @@ def main():
 
 
     # make the agents execute their plans
-    for t in range(3000):
-        if(t%10 == 0):
-            env.gen_new_treasures(random.randint(0,5), 7)
+    for t in range(horizon):
+        if t % 10 == 0:
+            env.gen_new_treasures(random.randint(0, 5), 7)
+
         conflict_free = False
+
+        # Étape 1 : Les agents déclarent leurs intentions
         for a in lAg.values():
-                a.declare_intention()
-        while(not(conflict_free)):      
+            a.declare_intention()
+
+        # Étape 2 : Résolution des conflits
+        while not conflict_free:
             for a in lAg.values():
                 a.resolve_conflicts()
-            conflict_free = True # On fait l'hypothèse qu'il n'y a plus de conflits
+            conflict_free = True  # On fait l'hypothèse qu'il n'y a plus de conflits
             for a in lAg.values():
-                if(len(a.mailBox)!=0): # Si pour au moins un agent la boite mail n'est pas vide, alors il y a conflit
-                   conflict_free = False 
-            
+                if len(a.mailBox) != 0:  # Si au moins un agent a un conflit
+                    conflict_free = False
+
+        # Étape 3 : Actions des agents
         for a in lAg.values():
-            #here the action of agent a at timestep t should be executed
-            a.do_policy()
-            # print(a)
+            a.do_policy()  # Action de l'agent au temps t
+
         print(env)
         graphics.update_display(env)
-            
+
 
     # print each agent's score
 
