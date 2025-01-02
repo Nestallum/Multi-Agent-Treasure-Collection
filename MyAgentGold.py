@@ -1,5 +1,5 @@
-import ast
 from MyAgent import MyAgent
+import math
 
 
 #inherits MyAgent
@@ -51,14 +51,22 @@ class MyAgentGold(MyAgent):
             else :
                 self.load(self.env)
             self.task_in_progress = False
-        else: # Avance sur son chemin
+        # else: # Avance sur son chemin
+        #     next_x, next_y = path[0]
+        #     if((next_x, next_y) == self.getPos()): # si le prochain move est sur la même case courante
+        #         path.pop(0) # ne bouge pas
+        #     else:
+        #         move_ok = self.move(self.posX, self.posY, next_x, next_y)
+        #         if(move_ok == 1): # succès
+        #             path.pop(0)
+        else:  # Avance sur son chemin
             next_x, next_y = path[0]
-            if((next_x, next_y) == self.getPos()): # si le prochain move est sur la même case courante
-                path.pop(0) # ne bouge pas
-            else:
-                move_ok = self.move(self.posX, self.posY, next_x, next_y)
-                if(move_ok == 1): # succès
-                    path.pop(0)
+            print("AVANCE SUR SON CHEMIN")
+            current_x, current_y = self.getPos()
+            next_move = self.move(self.posX, self.posY, next_x, next_y)
+            if next_move == 1 or (current_x,current_y) == self.task_path[0]:  # succès
+                print("SUCCES")
+                path.pop(0)
 
 
     def fill_tasks(self):
@@ -75,16 +83,21 @@ class MyAgentGold(MyAgent):
     def is_other_occuped(self):
         if(not self.other_agents_tasks == []): # l'autre agent est peut être occupé
             x, y = self.other_agents_tasks[-1] # on récupère la tâche de l'autre agent
-            if not self.env.grilleTres[x][y].getValue() == 0: # l'agent n'a pas encore ouvert le coffre
+            if self.env.grilleTres[x][y] is not None and not self.env.grilleTres[x][y].getValue() == 0: # l'agent n'a pas encore ouvert le coffre
                 return True
         return False
     
     def do_policy(self):
+        print(self.getId(), self.task_path)
+        print(self.getId(), self.task_in_progress)
+        print(self.backPack)
+        print(f"position : {self.getPos()}")
         self.forbidden_moves = []
         # Si l'agent a un butin > à la moitié de son backpack, il part unload
-        if not(self.task_in_progress) and self.backPack*0.60 < self.gold :
+        if not self.task_in_progress and self.backPack*0.5 < self.gold :
             task = self.env.posUnload
             self.find_best_path(task)
+            # self.go_to_unload()
             self.task_in_progress = True   
 
         # Si l'agent a unload et n'a pas de tâche, il doit soit trouver une nouvelle tâche, soit aller au garage
@@ -92,23 +105,47 @@ class MyAgentGold(MyAgent):
             self.unloaded = False
             self.fill_tasks() 
             task = self.task_finding()
+            print(f'{self.getId()} filltask {self.tasks}')
+            print(f"{self.getId()} task {task}")
             if(task is None): # Aller au garage
-                posY = int(self.getId()[-1]) % 4
-                self.find_best_path((11, posY)) # Se garer en position 0-1,2,3,4 selon l'agent (ne bloque pas l'entrée 0-5 du coffre)
-                self.task_in_progress = True 
-                self.next_move(self.task_path)
+                # posY = int(self.getId()[-1]) % 4
+                # self.find_best_path((11, posY)) # Se garer en position 0-1,2,3,4 selon l'agent (ne bloque pas l'entrée 0-5 du coffre)
+                # self.task_in_progress = True 
+                # self.next_move(self.task_path)
+
+                min_distance = math.inf
+                best_parking_spot = None
+
+                for x in range(self.env.tailleX):
+                    for y in range(self.env.tailleY):
+                        # Vérifie que la case est vide, qu'elle ne bloque pas le dépôt, et qu'elle est à au moins 3 cases sur les deux axes
+                        if (
+                            self.env.grilleAgent[x][y] is None and self.env.grilleTres[x][y] is not None and self.env.grilleTres[x][y].getValue() == 0  # La case est vide
+                            and (abs(x - 5) >= 3 and abs(y - 0) >= 3)  # À au moins 3 cases du dépôt (5, 0)
+                        ):
+                            distance = self.distance(self.posX, self.posY, x, y)
+                            if distance < min_distance:
+                                min_distance = distance
+                                best_parking_spot = (x, y)
+
+                if best_parking_spot:
+                    self.find_best_path(best_parking_spot)  # Trouve le chemin vers le meilleur coffre
+                    self.task_in_progress = True
+                else:
+                    posY = int(self.getId()[-1]) % 4
+                    self.find_best_path((11, posY)) # Se garer en position 0-1,2,3,4 selon l'agent (ne bloque pas l'entrée 0-5 du coffre)
+                    self.task_in_progress = True 
 
         # Continue son chemin
-        else:
-            if(not self.unloaded and self.task_in_progress): # Agent en cours de progression
-                self.next_move(self.task_path)
+        if(not self.unloaded and self.task_in_progress): # Agent en cours de progression
+            self.next_move(self.task_path)
+        elif not self.task_in_progress:
+            self.fill_tasks() # Agent libre remplit sa liste de tâche
+            self.unloaded = False
+            task = self.task_finding()
+            if(task is None):
+                print(f"Agent{self.getId} - aucune action possible.")
             else:
-                self.fill_tasks() # Agent libre remplit sa liste de tâche
-                self.unloaded = False
-                task = self.task_finding()
-                if(task is None):
-                    print(f"Agent{self.getId} - aucune action possible.")
-                else:
-                    self.find_best_path(task) # rempli le chemin de l'agent
-                    self.task_in_progress = True
-                    self.next_move(self.task_path) 
+                self.find_best_path(task) # rempli le chemin de l'agent
+                self.task_in_progress = True
+                self.next_move(self.task_path) 
