@@ -7,7 +7,7 @@ from Treasure import Treasure
 from Graphics import Graphics
 import random
 
-horizon = 1000
+horizon = 5000
 
 def loadFileConfig(nameFile) :
 
@@ -203,7 +203,10 @@ def main():
 
 
     # print each agent's score
-
+    print("\n\n")
+    for agent in lAg.values():
+        print(f"Agent ID: {agent.getId()} | Treasure Collected: {agent.getTreasure()}")
 
     print("\n\n******* SCORE TOTAL : {}".format(env.getScore()))
+
 main()

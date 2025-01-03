@@ -33,60 +33,115 @@ class MyAgentChest(MyAgent) :
         if self.opened:
             self.opened = False
             if not self.task_in_progress:  # A ouvert mais n'a pas bougé, doit se déplacer pour ne pas gêner
-                # Trouver le coffre ouvert le plus proche
-                min_distance = math.inf
-                best_open_chest = None
+                # # Trouver le coffre ouvert le plus proche
+                # min_distance = math.inf
+                # best_open_chest = None
 
+                # for x in range(self.env.tailleX):
+                #     for y in range(self.env.tailleY):
+                #         if (
+                #             self.env.grilleTres[x][y] is not None 
+                #             and self.env.grilleTres[x][y].getValue() == 0  # Vérifie si c'est un coffre déjà ouvert
+                #             and (x, y) not in self.forbidden_moves 
+                #             and self.env.grilleAgent[x][y] is None  # La case n'est pas interdite
+                #         ):
+                #             distance = self.distance(self.posX, self.posY, x, y)
+                #             if distance < min_distance:
+                #                 min_distance = distance
+                #                 best_open_chest = (x, y)
+
+                # if best_open_chest:
+                #     # Se déplacer vers le coffre déjà ouvert le plus proche
+                #     chest_x, chest_y = best_open_chest
+                #     self.move(self.posX, self.posY, chest_x, chest_y)
+                # else:
+                #     # Sinon, se déplacer d'une case aléatoire libre
+                #     directions = [
+                #         (-1, 0), (1, 0),  # North, South
+                #         (0, -1), (0, 1),  # West, East
+                #         (-1, -1), (-1, 1),  # North-West, North-East
+                #         (1, -1), (1, 1)    # South-West, South-East
+                #     ]  # Déplacements possibles
+
+                #     random.shuffle(directions)  # Mélange les directions pour ajouter de l'aléatoire
+
+                #     for dx, dy in directions:
+                #         new_x, new_y = self.posX + dx, self.posY + dy
+                #         # Vérifie si la position est valide et libre
+                #         if (
+                #             0 <= new_x < self.env.tailleX
+                #             and 0 <= new_y < self.env.tailleY
+                #             and self.env.grilleAgent[new_x][new_y] is None
+                #             and (new_x, new_y) not in self.forbidden_moves
+                #             and self.env.grilleTres[new_x][new_y] is None
+                #         ):
+                #             self.move(self.posX, self.posY, new_x, new_y)
+                #             break
+
+                # Trouver la case libre la plus proche
+                min_distance = math.inf
+                best_free_case = None
                 for x in range(self.env.tailleX):
                     for y in range(self.env.tailleY):
                         if (
-                            self.env.grilleTres[x][y] is not None 
-                            and self.env.grilleTres[x][y].getValue() == 0  # Vérifie si c'est un coffre déjà ouvert
-                            and (x, y) not in self.forbidden_moves 
-                            and self.env.grilleAgent[x][y] is None  # La case n'est pas interdite
+                            0 <= x < self.env.tailleX
+                            and 0 <= y < self.env.tailleY
+                            and self.env.grilleTres[x][y] is None 
+                            and self.env.grilleAgent[x][y] is None
+                            and (x, y) != self.env.posUnload
+                            and (x, y) not in self.forbidden_moves      
                         ):
                             distance = self.distance(self.posX, self.posY, x, y)
                             if distance < min_distance:
                                 min_distance = distance
-                                best_open_chest = (x, y)
+                                best_free_case = (x, y)
 
-                if best_open_chest:
-                    # Se déplacer vers le coffre déjà ouvert le plus proche
-                    chest_x, chest_y = best_open_chest
-                    self.move(self.posX, self.posY, chest_x, chest_y)
-                else:
-                    # Sinon, se déplacer d'une case aléatoire libre
-                    directions = [
-                        (-1, 0), (1, 0),  # North, South
-                        (0, -1), (0, 1),  # West, East
-                        (-1, -1), (-1, 1),  # North-West, North-East
-                        (1, -1), (1, 1)    # South-West, South-East
-                    ]  # Déplacements possibles
+                if best_free_case:
+                    # Se déplacer vers la case libre la plus proche
+                    current_x, current_y = self.getPos()
+                    task = best_free_case
+                    self.find_best_path(task)
+                    self.task_in_progress = True
+                    path = self.task_path
+                else: # Si aucune case libre; trouver un coffre ouvert
+                    min_distance = math.inf
+                    best_free_case = None
 
-                    random.shuffle(directions)  # Mélange les directions pour ajouter de l'aléatoire
-
-                    for dx, dy in directions:
-                        new_x, new_y = self.posX + dx, self.posY + dy
-                        # Vérifie si la position est valide et libre
-                        if (
-                            0 <= new_x < self.env.tailleX
-                            and 0 <= new_y < self.env.tailleY
-                            and self.env.grilleAgent[new_x][new_y] is None
-                            and (new_x, new_y) not in self.forbidden_moves
-                        ):
-                            self.move(self.posX, self.posY, new_x, new_y)
-                            break
+                    for x in range(self.env.tailleX):
+                        for y in range(self.env.tailleY):
+                            if (
+                                0 <= x < self.env.tailleX
+                                and 0 <= y < self.env.tailleY
+                                and self.env.grilleTres[x][y] is not None 
+                                and self.env.grilleTres[x][y].getValue() == 0
+                                and self.env.grilleAgent[x][y] is None
+                                and (x, y) != self.env.posUnload
+                                and (x, y) not in self.forbidden_moves      
+                            ):
+                                distance = self.distance(self.posX, self.posY, x, y)
+                                if distance < min_distance:
+                                    min_distance = distance
+                                    best_free_case = (x, y)
+                    if best_free_case:
+                        # Se déplacer vers le coffre ouvert libre le plus proche
+                        current_x, current_y = self.getPos()
+                        task = best_free_case
+                        self.find_best_path(task)
+                        self.task_in_progress = True
+                        path = self.task_path
 
         if self.task_in_progress:
-            if len(path) == 0:  # Arrivé à la position de la tâche
-                self.open()
+            if not path:  # Arrivé à la position de la tâche
+                (x,y) = self.getPos()
+                if self.env.grilleTres[x][y] is not None and not self.env.grilleTres[x][y].isOpen():
+                    self.open()
+                    self.opened = True
                 self.task_in_progress = False
-                self.opened = True
             else:  # Avance sur son chemin
                 next_x, next_y = path[0]
                 current_x, current_y = self.getPos()
                 next_move = self.move(self.posX, self.posY, next_x, next_y)
-                if next_move == 1 or (current_x,current_y) == self.getPos():  # succès
+                if next_move == 1 or (current_x,current_y) == self.task_path[0]:  # succès
                     path.pop(0)
 
     def fill_tasks(self):
