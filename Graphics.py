@@ -171,7 +171,7 @@ class Graphics:
             )
 
     def update_display(self, environment):
-        pygame.time.delay(100) # Ajoute un délai en ms
+        pygame.time.delay(10) # Ajoute un délai en ms
         self.env = environment
         # Gérer les événements utilisateur
         for event in pygame.event.get():

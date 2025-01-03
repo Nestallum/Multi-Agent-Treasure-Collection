@@ -19,6 +19,7 @@ class MyAgent:
         self.task_path = []
         self.other_agents_tasks = []
         self.forbidden_moves = []
+        self.score = 0
 
     def __eq__(self, other):
         if isinstance(other, self.__class__):
@@ -44,6 +45,8 @@ class MyAgent:
     def getPos(self):
         return (self.posX, self.posY)
 
+    def getScore(self) :
+        return self.score
     # add a message to the agent's mailbox
     def receive(self, idReceiver, textContent):
         self.mailBox.append((idReceiver, textContent))
