@@ -135,6 +135,7 @@ class MyAgentChest(MyAgent) :
                 (x,y) = self.getPos()
                 if self.env.grilleTres[x][y] is not None and not self.env.grilleTres[x][y].isOpen():
                     self.open()
+                    self.score = self.score + 1
                     self.opened = True
                 self.task_in_progress = False
             else:  # Avance sur son chemin

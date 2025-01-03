@@ -19,6 +19,7 @@ class MyAgentStones(MyAgent):
     #unload stone in the pack back at the current position
     def unload(self):
         self.env.unload(self)
+        self.score = self.score + self.stone
         self.stone = 0
 
     #return the agent's type

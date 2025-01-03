@@ -19,6 +19,7 @@ class MyAgentGold(MyAgent):
     #unload gold in the pack back at the current position
     def unload(self):
         self.env.unload(self)
+        self.score = self.score + self.gold
         self.gold = 0
 
     #return the agent's type
