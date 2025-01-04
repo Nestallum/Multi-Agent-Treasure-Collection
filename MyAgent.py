@@ -415,7 +415,6 @@ class MyAgent:
                     best_move = random.choice(possible_moves)
                 else:
                     # No valid moves at all, stay in place
-                    print(f"No valid move found. Agent {self.getId()} stays at {self.getPos()}.")
                     best_move = self.getPos()
 
                 first_move = False
