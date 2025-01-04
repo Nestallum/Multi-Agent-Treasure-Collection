@@ -106,7 +106,7 @@ def main():
     # print each agent's score
     print("\n\n")
     for agent in lAg.values():
-        if (agent.getId()==0) :
+        if (agent.getType()==0) :
             print(f"Agent ID: {agent.getId()} | Treasures Unlocked: {agent.getScore()}")
         else :
             print(f"Agent ID: {agent.getId()} | Resources Collected: {agent.getScore()}")
