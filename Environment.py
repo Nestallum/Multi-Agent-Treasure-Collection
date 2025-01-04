@@ -40,7 +40,7 @@ class Environment:
             print("invalid move")
             return False
         if (not self.isAt(agent, x1, y1)) or self.grilleAgent[x2][y2] != None : # position already occupied
-            # print("position not free")
+            print("position not free")
             return False
         else :
             self.grilleAgent[x2][y2] = agent
@@ -56,23 +56,23 @@ class Environment:
 
         if self.isAt(agent, self.posUnload[0], self.posUnload[1]) :
             self.score = self.score + agent.getTreasure()
-            #print("unload tres : {}".format(agent.getTreasure()))
+            print("unload tres : {}".format(agent.getTreasure()))
 
     # make a Chest Agent open the chest
     def open(self, agent:MyAgentChest, x, y):
         if(self.grilleAgent[x][y] == agent and self.grilleTres[x][y] != None) :
             self.grilleTres[x][y].openChest()
-            #print("chest open !")
+            print("chest open !")
 
     # make an agent load some treasure
     def load(self, agent ):
         x , y = agent.getPos()
         if(self.grilleTres[x][y] != None  and self.grilleTres[x][y].getType() == agent.getType()) :
-            #print("load OK")
+            print("load OK")
             agent.addTreasure(self.grilleTres[x][y].getValue())
             self.grilleTres[x][y].resetValue()
-        #else :
-            #print("load fail")
+        else :
+            print("load fail")
 
     #make an agent send a message
     def send(self,idSender, idReceiver, textContent):
@@ -85,7 +85,7 @@ class Environment:
             t = random.randint(1,2)
             v = random.randint(1, maxVal)
             print("new tres at", x, y)
-            if not (x,y) == self.posUnload: # Ne pas créer de trésor sur le dépot !!!
+            if not (x,y) == self.posUnload: # do not create treasures at the depot
                 self.addTreasure(Treasure(t,v), x, y)
 
     def __str__(self):
