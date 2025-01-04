@@ -7,7 +7,7 @@ from Treasure import Treasure
 from Graphics import Graphics
 import random
 
-horizon = 200
+horizon = 100
 
 def loadFileConfig(nameFile) :
 
@@ -40,14 +40,14 @@ def loadFileConfig(nameFile) :
                 env.addAgent(agent)
                 cpt = cpt +1
 
-            if(ligneSplit[1]=="pierres"):
+            elif(ligneSplit[1]=="pierres"):
                 id = "agent" + str(cpt)
                 agent = MyAgentStones(id, int(ligneSplit[2]), int(ligneSplit[3]), env, int(ligneSplit[4]))
                 dictAgent[id] = agent
                 env.addAgent(agent)
                 cpt = cpt + 1
 
-            if (ligneSplit[1] == "ouvr"):
+            elif(ligneSplit[1] == "ouvr"):
                 id = "agent" + str(cpt)
                 agent = MyAgentChest(id, int(ligneSplit[2]), int(ligneSplit[3]), env)
                 dictAgent[id] = agent
@@ -62,16 +62,13 @@ def loadFileConfig(nameFile) :
 def main():
     env, lAg = loadFileConfig("env1.txt")
     print(env)
-    # # Initialiser l'interface graphique
+    for a in lAg.values() :
+        print(a)
+
+    # Initialisation de l'interface graphique
     graphics = Graphics(env)
-    
-    ##############################################
-    ####### TODO #################################
-    ##############################################
 
     # make the agents plan their actions (off-line phase) TO COMPLETE
-
-
     # make the agents execute their plans
     for t in range(horizon):
         if t % 10 == 0:
@@ -79,32 +76,38 @@ def main():
 
         conflict_free = False
 
-        # Étape 1 : Les agents déclarent leurs intentions
-        for a in lAg.values():
-            a.declare_intention()
+        # Step 1: Agents declare their intentions
+        # Each agent broadcasts its planned movement or stationary intention to others.
+        for agent in lAg.values():
+            agent.broadcast_intention()
 
-        # Étape 2 : Résolution des conflits
+        # Step 2: Resolve conflicts
+        # Continue resolving conflicts until all agents are conflict-free.
         while not conflict_free:
-            for a in lAg.values():
-                a.resolve_conflicts()
-            conflict_free = True  # On fait l'hypothèse qu'il n'y a plus de conflits
-            for a in lAg.values():
-                if len(a.mailBox) != 0:  # Si au moins un agent a un conflit
+            for agent in lAg.values():
+                agent.resolve_conflicts()  # Each agent processes its mailbox and adjusts its path if needed
+
+            conflict_free = True  # Assume no conflicts remain
+
+            # Check if any agent still has unresolved messages
+            for agent in lAg.values():
+                if len(agent.mailBox) != 0:  # If any mailbox is not empty, there are still conflicts
                     conflict_free = False
 
-        # Étape 3 : Actions des agents
-        for a in lAg.values():
-            a.do_policy()  # Action de l'agent au temps t
+        # Step 3: Agents take actions
+        # After resolving conflicts, each agent executes its planned action for the current time step.
+        for agent in lAg.values():
+            agent.do_policy()
 
+        # Update display and environment
+        # Print the current state of the environment and update the graphical display.
         print(env)
         graphics.update_display(env)
-
-
     # print each agent's score
     print("\n\n")
     for agent in lAg.values():
         if (agent.getId()==0) :
-            print(f"Agent ID: {agent.getId()} | Treasures Opened: {agent.getScore()}")
+            print(f"Agent ID: {agent.getId()} | Treasures Unlocked: {agent.getScore()}")
         else :
             print(f"Agent ID: {agent.getId()} | Resources Collected: {agent.getScore()}")
             
