@@ -103,6 +103,7 @@ def main():
         # Print the current state of the environment and update the graphical display.
         print(env)
         graphics.update_display(env)
+
     # print each agent's score
     print("\n\n")
     for agent in lAg.values():
