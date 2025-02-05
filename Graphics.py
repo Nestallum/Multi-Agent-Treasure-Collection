@@ -186,7 +186,7 @@ class Graphics:
         Args:
         - environment: The updated simulation environment.
         """
-        pygame.time.delay(30)  # Add a small delay for smoother animation
+        pygame.time.delay(200)  # Add a small delay for smoother animation
         self.env = environment  # Update the environment reference
         # Handle user events
         for event in pygame.event.get():
